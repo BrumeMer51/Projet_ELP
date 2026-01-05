@@ -1,0 +1,106 @@
+package main
+
+import (
+	"image"
+	"image/color"
+	"image/png"
+	"log"
+	"net"
+	"os"
+	"sync"
+)
+
+const (
+	HOST = "localhost"
+	PORT = "8080"
+	TYPE = "tcp"
+)
+
+func traitement_image(chemin_image string) {
+	var wg sync.WaitGroup
+	n := 1 //
+	wg.Add(n)
+	// Import de l'image
+	file, err := os.Open(chemin_image)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	imageI, err := png.Decode(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err != nil {
+		log.Fatalf("Error reading file: %v", err)
+	}
+
+	// Récupération des dimensions
+	bounds := imageI.Bounds()
+
+	// Création de la nouvelle image
+	imageF := image.NewRGBA(image.Rect(bounds.Min.X, bounds.Min.Y, bounds.Max.X, bounds.Max.Y))
+
+	// Traitement de l'image
+	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			r, g, b, a := imageI.At(x, y).RGBA()
+			n := (r + g + b) / 3
+
+			// RGBA() retourne des valeurs sur 16 bits (0–65535)
+			// Conversion en 8 bits (0–255)
+			n8 := uint8(n >> 8)
+			a8 := uint8(a >> 8)
+
+			couleur := color.RGBA{n8, n8, n8, a8}
+			imageF.Set(x, y, couleur)
+
+		}
+	}
+
+	// Finalisation de l'image
+	file, erro := os.Create("Resultat.png")
+	if erro != nil {
+		log.Fatalf("Error creating file: %v", err)
+	}
+	defer file.Close()
+
+	if err := png.Encode(file, imageF); err != nil {
+		log.Fatalf("Error encoding image: %v", err)
+	}
+}
+
+func handleRequest(conn net.Conn) {
+	// Décryptage de la requête entrante dans un buffer
+	buffer := make([]byte, 1024)
+	_, err := conn.Read(buffer)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Sélection de l'image et traitement
+	chemin := string(buffer[:])
+	traitement_image(chemin)
+
+	// Fermeture de la connection
+	conn.Close()
+}
+
+func main() {
+	// Création du serveur
+	listen, err := net.Listen(TYPE, HOST+":"+PORT)
+	if err != nil {
+		log.Fatal(err)
+		os.Exit(1)
+	}
+	// Lancement de l'écoute de manière infinie
+	defer listen.Close()
+	for {
+		conn, err := listen.Accept()
+		if err != nil {
+			log.Fatal(err)
+			os.Exit(1)
+		}
+		go handleRequest(conn)
+	}
+}
