@@ -6,10 +6,11 @@ import (
 	"image/png"
 	"log"
 	"os"
+	"sync"
 )
 
 // Definition de la fonction traitant une certaine bande d'image et renvoyant la bande filtrée
-func traitement_bande(borne_sup int, borne_inf int, bounds image.Rectangle, imageI image.Image, imageF *image.RGBA) {
+func traitement_bande(borne_sup int, borne_inf int, bounds image.Rectangle, imageI image.Image, imageF *image.RGBA, wg *sync.WaitGroup) {
 	// Code traitement image
 	for y := borne_inf; y < borne_sup; y++ {
 		for x := bounds.Min.X; x < bounds.Max.X; x++ {
@@ -29,6 +30,7 @@ func traitement_bande(borne_sup int, borne_inf int, bounds image.Rectangle, imag
 }
 
 func main() {
+	var wg sync.WaitGroup
 	n := 4
 	// Import de l'image
 	file, err := os.Open("deepfield.png")
@@ -65,8 +67,10 @@ func main() {
 			b_sup = bounds.Max.Y
 		}
 
-		go traitement_bande(b_sup, b_inf, bounds, imageI, imageF)
+		go traitement_bande(b_sup, b_inf, bounds, imageI, imageF, &wg)
 	}
+
+	wg.Wait()
 
 	// Finalisation de l'image
 	file, erro := os.Create("output_big_2.png")
