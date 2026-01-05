@@ -82,6 +82,10 @@ func handleRequest(conn net.Conn) {
 	chemin := string(buffer[:])
 	traitement_image(chemin)
 
+	// Réponse du serveur
+	responseStr := "Image traitée"
+	conn.Write([]byte(responseStr))
+
 	// Fermeture de la connection
 	conn.Close()
 }
@@ -104,3 +108,4 @@ func main() {
 		go handleRequest(conn)
 	}
 }
+
