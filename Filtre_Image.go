@@ -11,6 +11,7 @@ import (
 
 // Definition de la fonction traitant une certaine bande d'image et renvoyant la bande filtrée
 func traitement_bande(borne_sup int, borne_inf int, bounds image.Rectangle, imageI image.Image, imageF *image.RGBA, wg *sync.WaitGroup) {
+	defer wg.Done()
 	// Code traitement image
 	for y := borne_inf; y < borne_sup; y++ {
 		for x := bounds.Min.X; x < bounds.Max.X; x++ {
@@ -83,3 +84,4 @@ func main() {
 		log.Fatalf("Error encoding image: %v", err)
 	}
 }
+
