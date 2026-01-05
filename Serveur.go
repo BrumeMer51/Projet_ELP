@@ -7,7 +7,7 @@ import (
 	"log"
 	"net"
 	"os"
-	"sync"
+	"strings"
 )
 
 const (
@@ -17,8 +17,9 @@ const (
 )
 
 func traitement_image(chemin_image string) {
+	chemin := string(chemin_image)
 	// Import de l'image
-	file, err := os.Open(chemin_image)
+	file, err := os.Open(chemin)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -70,13 +71,14 @@ func traitement_image(chemin_image string) {
 func handleRequest(conn net.Conn) {
 	// Décryptage de la requête entrante dans un buffer
 	buffer := make([]byte, 1024)
-	_, err := conn.Read(buffer)
+	n, err := conn.Read(buffer)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Sélection de l'image et traitement
-	chemin := string(buffer[:])
+	chemin := string(buffer[:n])
+	chemin = strings.TrimSpace(chemin)
 	traitement_image(chemin)
 
 	// Réponse du serveur
@@ -105,5 +107,3 @@ func main() {
 		go handleRequest(conn)
 	}
 }
-
-
