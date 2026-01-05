@@ -17,9 +17,6 @@ const (
 )
 
 func traitement_image(chemin_image string) {
-	var wg sync.WaitGroup
-	n := 1 //
-	wg.Add(n)
 	// Import de l'image
 	file, err := os.Open(chemin_image)
 	if err != nil {
@@ -108,4 +105,5 @@ func main() {
 		go handleRequest(conn)
 	}
 }
+
 
