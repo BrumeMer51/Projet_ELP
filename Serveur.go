@@ -38,9 +38,6 @@ func traitement_image(chemin_image string) {
 
 	imageI, err := png.Decode(file)
 	if err != nil {
-		log.Fatal(err)
-	}
-	if err != nil {
 		log.Fatalf("Error reading file: %v", err)
 	}
 
