@@ -55,7 +55,7 @@ func main() {
 	imageF := image.NewRGBA(image.Rect(bounds.Min.X, bounds.Min.Y, bounds.Max.X, bounds.Max.Y))
 
 	// Division de l'image en n bande
-	intervale := bounds.Max.Y % n
+	intervale := bounds.Max.Y / n
 	b_inf := 0
 	b_sup := 0
 
@@ -84,4 +84,5 @@ func main() {
 		log.Fatalf("Error encoding image: %v", err)
 	}
 }
+
 
