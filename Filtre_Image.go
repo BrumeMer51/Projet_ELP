@@ -60,7 +60,7 @@ func main() {
 	b_sup := 0
 
 	// Pour chaque bande lancer la go routine
-	for i := range n {
+	for i := 0; i < n; i++ {
 		b_inf = b_inf + intervale
 		if i != n-1 {
 			b_sup = b_inf + intervale
@@ -84,5 +84,6 @@ func main() {
 		log.Fatalf("Error encoding image: %v", err)
 	}
 }
+
 
 
