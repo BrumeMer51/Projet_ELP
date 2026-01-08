@@ -23,7 +23,7 @@ func traitement_image(chemin_image string) {
 		Fonction prenant en paramètre le chemin local vers une image, et créant une nouvelle image avec un filtre noir et blanc
 		Entrées :
 
-			chemin_image : string
+			chemin_image : string indiquant le chemin local vers une image
 
 		Sorties :
 
@@ -84,7 +84,7 @@ func handleRequest(conn net.Conn) {
 		Fonction prenant en paramètre une sortie de pipe qui lit sur cette pipe et applique un filtre à l'image envoyée
 		Entrées :
 
-			conn : net.Conn
+			conn : sortie d'une pipe
 
 		Sorties :
 
