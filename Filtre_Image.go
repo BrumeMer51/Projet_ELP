@@ -12,12 +12,12 @@ import (
 // Definition de la fonction traitant une certaine bande d'image et crée la bande filtrée
 func traitement_bande(borne_sup int, borne_inf int, bounds image.Rectangle, imageI image.Image, imageF *image.RGBA, wg *sync.WaitGroup) {
 	/*
-		entrées :
+		Entrées :
 			borne_sup, borne_inf : bornes des lignes de l'image à modifier dans cette goroutine
 			bounds : bornes de l'image entière
 			imageI : image source dont on veut obtenir l'image filtré
 			imageF : image qui sera modifié lors de la fonction, de la même taille que imageI
-		sorties :
+		Sorties :
 			None
 	*/
 	defer wg.Done()
@@ -44,8 +44,9 @@ func traitement_bande(borne_sup int, borne_inf int, bounds image.Rectangle, imag
 
 func main() {
 	var wg sync.WaitGroup
-	// nombre de go routines à utilisé
+	// Nombre de goroutines à utiliser
 	n := 4
+	
 	// Import de l'image à partir du chemin
 	file, err := os.Open("deepfield.png")
 	if err != nil {
@@ -69,7 +70,7 @@ func main() {
 	b_inf := 0
 	b_sup := intervale
 
-	// Pour chaque bande lancer la go routine
+	// Pour chaque bande, lancer la go routine
 	for i := 0; i < n; i++ {
 		go traitement_bande(b_sup, b_inf, bounds, imageI, imageF, &wg)
 		b_inf = b_inf + intervale
@@ -93,4 +94,5 @@ func main() {
 		log.Fatalf("Error encoding image: %v", err)
 	}
 }
+
 
