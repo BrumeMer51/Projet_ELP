@@ -1,5 +1,6 @@
 package main
 
+// Imports :
 import (
 	"image"
 	"image/color"
@@ -10,6 +11,7 @@ import (
 	"strings"
 )
 
+// Constantes liées à la socket utilisée par le serveur :
 const (
 	HOST = "localhost"
 	PORT = "8080"
@@ -17,9 +19,18 @@ const (
 )
 
 func traitement_image(chemin_image string) {
-	chemin := string(chemin_image)
+	/*
+		Fonction prenant en paramètre le chemin local vers une image, et créant une nouvelle image avec un filtre noir et blanc
+		Entrées :
+
+			chemin_image : string
+
+		Sorties :
+
+			None
+	*/
 	// Import de l'image
-	file, err := os.Open(chemin)
+	file, err := os.Open(chemin_image)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -69,6 +80,16 @@ func traitement_image(chemin_image string) {
 }
 
 func handleRequest(conn net.Conn) {
+	/*
+		Fonction prenant en paramètre une sortie de pipe qui lit sur cette pipe et applique un filtre à l'image envoyée
+		Entrées :
+
+			conn : net.Conn
+
+		Sorties :
+
+			None
+	*/
 	// Décryptage de la requête entrante dans un buffer
 	buffer := make([]byte, 1024)
 	n, err := conn.Read(buffer)
@@ -81,10 +102,8 @@ func handleRequest(conn net.Conn) {
 	chemin = strings.TrimSpace(chemin)
 	traitement_image(chemin)
 
-	// Réponse du serveur
 	responseStr := "Image traitée"
 	conn.Write([]byte(responseStr))
-
 	// Fermeture de la connection
 	conn.Close()
 }
@@ -96,8 +115,8 @@ func main() {
 		log.Fatal(err)
 		os.Exit(1)
 	}
-	// Lancement de l'écoute de manière infinie
-	defer listen.Close()
+	// Lancement de l'écoute de manière infinie, quand une connexion est demandée de la part d'un client, une goroutine est lancée
+	defer listen.Close() //La fermeture de l'écoute est différée au moment où le serveur sera fermé
 	for {
 		conn, err := listen.Accept()
 		if err != nil {
