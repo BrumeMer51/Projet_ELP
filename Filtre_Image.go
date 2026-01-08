@@ -42,9 +42,6 @@ func main() {
 
 	imageI, err := png.Decode(file)
 	if err != nil {
-		log.Fatal(err)
-	}
-	if err != nil {
 		log.Fatalf("Error reading file: %v", err)
 	}
 
@@ -83,6 +80,7 @@ func main() {
 		log.Fatalf("Error encoding image: %v", err)
 	}
 }
+
 
 
 
