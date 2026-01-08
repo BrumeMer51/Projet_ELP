@@ -57,18 +57,17 @@ func main() {
 	// Division de l'image en n bande
 	intervale := bounds.Max.Y / n
 	b_inf := 0
-	b_sup := 0
+	b_sup := intervale
 
 	// Pour chaque bande lancer la go routine
 	for i := 0; i < n; i++ {
+		go traitement_bande(b_sup, b_inf, bounds, imageI, imageF, &wg)
 		b_inf = b_inf + intervale
 		if i != n-1 {
 			b_sup = b_inf + intervale
 		} else {
 			b_sup = bounds.Max.Y
 		}
-
-		go traitement_bande(b_sup, b_inf, bounds, imageI, imageF, &wg)
 	}
 
 	wg.Wait()
@@ -84,6 +83,7 @@ func main() {
 		log.Fatalf("Error encoding image: %v", err)
 	}
 }
+
 
 
 
