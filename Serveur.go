@@ -42,7 +42,7 @@ func traitement_image(chemin_image string, titre string) {
 		log.Fatalf("Error reading file: %v", err)
 	}
 
-	// Récupération des dimensions
+	// Récupération des dimensions de l'image
 	bounds := imageI.Bounds()
 
 	// Création de la nouvelle image
@@ -51,15 +51,18 @@ func traitement_image(chemin_image string, titre string) {
 	// Traitement de l'image
 	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
 		for x := bounds.Min.X; x < bounds.Max.X; x++ {
-			r, g, b, a := imageI.At(x, y).RGBA()
-			n := (r + g + b) / 3
-
+			// Récupération de la couleur initial du pixel dans l'image initial
 			// RGBA() retourne des valeurs sur 16 bits (0–65535)
+			r, g, b, a := imageI.At(x, y).RGBA()
+
+			// Obtention de la valeur filtré en gris sur 16 bit
+			n := (r + g + b) / 3
 			// Conversion en 8 bits (0–255)
 			n8 := uint8(n >> 8)
 			a8 := uint8(a >> 8)
 
 			couleur := color.RGBA{n8, n8, n8, a8}
+			// Modification de la couleur du pixel sur l'image final par la couleur filtré
 			imageF.Set(x, y, couleur)
 
 		}
@@ -120,8 +123,9 @@ func main() {
 		log.Fatal(err)
 		os.Exit(1)
 	}
-	// Lancement de l'écoute de manière infinie, quand une connexion est demandée de la part d'un client, une goroutine est lancée
-	defer listen.Close() //La fermeture de l'écoute est différée au moment où le serveur sera fermé
+	// Lancement de l'écoute de manière infinie, quand une connexion est demandée de la part d'un client, une go routine est lancée
+	// La fermeture de l'écoute est différée au moment où le serveur sera fermé
+	defer listen.Close() 
 	for {
 		conn, err := listen.Accept()
 		if err != nil {
@@ -131,3 +135,4 @@ func main() {
 		go handleRequest(conn)
 	}
 }
+
