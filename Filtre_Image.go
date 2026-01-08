@@ -44,7 +44,7 @@ func traitement_bande(borne_sup int, borne_inf int, bounds image.Rectangle, imag
 
 func main() {
 	var wg sync.WaitGroup
-	// nombre de goroutines à utilisé
+	// nombre de go routines à utilisé
 	n := 4
 	// Import de l'image à partir du chemin
 	file, err := os.Open("deepfield.png")
@@ -93,3 +93,4 @@ func main() {
 		log.Fatalf("Error encoding image: %v", err)
 	}
 }
+
