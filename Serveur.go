@@ -18,12 +18,13 @@ const (
 	TYPE = "tcp"
 )
 
-func traitement_image(chemin_image string) {
+func traitement_image(chemin_image string, titre string) {
 	/*
 		Fonction prenant en paramètre le chemin local vers une image, et créant une nouvelle image avec un filtre noir et blanc
 		Entrées :
 
 			chemin_image : string indiquant le chemin local vers une image
+			titre : string donnant le nom de la nouvelle image
 
 		Sorties :
 
@@ -65,7 +66,7 @@ func traitement_image(chemin_image string) {
 	}
 
 	// Finalisation de l'image
-	file, erro := os.Create("Resultat.png")
+	file, erro := os.Create(titre)
 	if erro != nil {
 		log.Fatalf("Error creating file: %v", err)
 	}
@@ -94,13 +95,20 @@ func handleRequest(conn net.Conn) {
 		log.Fatal(err)
 	}
 
-	// Sélection de l'image et traitement
-	chemin := string(buffer[:n])
-	chemin = strings.TrimSpace(chemin)
-	traitement_image(chemin)
+	// Sélection de l'image à traiter, récupération du titre de la nouvelle image et traitement
+	recu := string(buffer[:n])
+	chemin, titre, ok := strings.Cut(recu, ",")
 
-	responseStr := "Image traitée"
-	conn.Write([]byte(responseStr))
+	chemin = strings.TrimSpace(chemin)
+
+	if ok == true {
+		traitement_image(chemin, titre)
+
+		responseStr := "Image traitée"
+		conn.Write([]byte(responseStr))
+	} else {
+		conn.Write([]byte("Erreur : message mal formaté"))
+	}
 	// Fermeture de la connection
 	conn.Close()
 }
