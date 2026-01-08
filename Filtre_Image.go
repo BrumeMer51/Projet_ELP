@@ -46,6 +46,7 @@ func main() {
 	var wg sync.WaitGroup
 	// Nombre de goroutines à utiliser
 	n := 4
+	wg.Add(n)
 	
 	// Import de l'image à partir du chemin
 	file, err := os.Open("deepfield.png")
@@ -94,5 +95,6 @@ func main() {
 		log.Fatalf("Error encoding image: %v", err)
 	}
 }
+
 
 
