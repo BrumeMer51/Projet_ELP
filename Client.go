@@ -32,7 +32,13 @@ func main() {
 	fmt.Print("Chemin de l'image : ")
 	fmt.Scan(&chemin)
 
-	_, err = conn.Write([]byte(chemin))
+	var titre string
+	fmt.Print("Titre de la nouvelle image (sans extension) : ")
+	fmt.Scan(&titre)
+
+	message := chemin + "," + titre + ".png"
+
+	_, err = conn.Write([]byte(message))
 	if err != nil {
 		println("Write data failed:", err.Error())
 		os.Exit(1)
