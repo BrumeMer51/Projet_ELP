@@ -39,6 +39,9 @@ func traitement_bande(borne_sup int, borne_inf int, bounds image.Rectangle, imag
 			// Modification de la couleur du pixel sur l'image final par la couleur filtré
 			imageF.Set(x, y, couleur)
 		}
+		if y%10 == 0 {
+			fmt.Print("go routine de début ", borne_inf, " a modifié une ligne \n")
+		}
 	}
 }
 
@@ -95,6 +98,7 @@ func main() {
 		log.Fatalf("Error encoding image: %v", err)
 	}
 }
+
 
 
 
