@@ -47,7 +47,9 @@ subscriptions model =
 
 --- View :
 --- ici définir la fonction view -> Model -> Html Msg et la fonction viewDef -> Model -> Html Msg
+--- Principe : parcourir des listes et afficher avec la bonne police/taille de caractères..., et vérification du texte
 view : Model -> Html Msg
 
 --- HTTP :
 --- ici définir la fonction getRandomWord et la fonction defDecoder
+--- Principe : générer un nb aléatoire entre 0 et 999, récupérer la définition du mot concerné avec un requête HTTP, et décodé le json pour stocké tous les champs
