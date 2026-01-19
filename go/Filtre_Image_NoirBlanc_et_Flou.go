@@ -15,9 +15,22 @@ const (
 	taille = 21
 )
 
+func min(a, b float64) float64 {
+	if a < b {
+		return a
+	}
+	return b
+}
+func max(a, b float64) float64 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
 func creation_matrice() [taille][taille]float64 {
 	var tab [taille][taille]float64
-	sigma := float64((taille - 1)) / 6.0
+	sigma := float64((taille - 1)) / 24.0
 	centre := float64((taille - 1)) / 2.0
 
 	somme := 0.0
@@ -52,38 +65,55 @@ func traitement_bande_Gaussien(noyau [taille][taille]float64, borne_sup int, bor
 	*/
 	defer wg.Done()
 	// Code du traitement et du filtre de l'image
-	taille := len(noyau)
+	centre := (taille - 1) / 2
 	// Pour tous les pixels sauf les bords
 	for y := borne_inf; y < borne_sup; y++ {
-		if bounds.Min.Y+taille < y && bounds.Max.Y-taille > y {
-			for x := bounds.Min.X; x < bounds.Max.X; x++ {
-				if bounds.Min.X+taille < x && bounds.Max.X-taille > x {
-					R := 0.0
-					G := 0.0
-					B := 0.0
-					// Pour tous les voisins dans le noyau :
-					for i := 0; i < taille; i++ {
-						for j := 0; j < taille; j++ {
-							// Si on est pas sur le centre :
-							if i != taille && j != taille {
-								// Récupération de la couleur initial du pixel dans l'image initiale, et calcul du flou
-								r, g, b, _ := imageI.At(x, y).RGBA()
-								R += float64(r) * noyau[i][j]
-								G += float64(g) * noyau[i][j]
-								B += float64(b) * noyau[i][j]
-							}
-						}
-					}
-					// Conversion en 8 bits (0–255)
-					R8 := uint8(R)
-					G8 := uint8(G)
-					B8 := uint8(B)
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			R32, G32, B32, _ := imageI.At(x, y).RGBA()
+			if bounds.Min.Y+taille/2 > y && bounds.Max.Y-taille/2 < y {
+				if bounds.Min.X+taille/2 > x && bounds.Max.X-taille/2 < x {
+					// Si on est sur les bords, on recopie tel quel
+					R8 := uint8(R32 >> 8)
+					G8 := uint8(G32 >> 8)
+					B8 := uint8(B32 >> 8)
 					a8 := uint8(255)
-
 					couleur := color.RGBA{R8, G8, B8, a8}
-					// Modification de la couleur du pixel sur l'image final par la couleur filtré
+					// Modification de la couleur du pixel sur l'image final par la couleur non filtrée
 					imageF.Set(x, y, couleur)
+
 				}
+			} else {
+				// Sinon, on floute
+				R_acc := 0.0
+				G_acc := 0.0
+				B_acc := 0.0
+				// Pour tous les voisins dans le noyau :
+				for i := 0; i < taille; i++ {
+					for j := 0; j < taille; j++ {
+						// Récupération de la couleur initial du pixel dans l'image initiale, et calcul du flou
+						r, g, b, _ := imageI.At(x+i-int(centre), y+j-int(centre)).RGBA()
+
+						R_acc += float64(r) * noyau[i][j]
+						G_acc += float64(g) * noyau[i][j]
+						B_acc += float64(b) * noyau[i][j]
+					}
+				}
+				// Conversion en base 16, au cas où on dépasse 65535 ou qu'on soit négatif, ce qui serait un problème pour mettre sur 8bits
+				R_acc = min(max(R_acc, 0), 65535)
+				G_acc = min(max(G_acc, 0), 65535)
+				B_acc = min(max(B_acc, 0), 65535)
+
+				// Conversion en 8 bits (0–255)
+				R8 := uint8(uint16(R_acc) >> 8)
+				G8 := uint8(uint16(G_acc) >> 8)
+				B8 := uint8(uint16(B_acc) >> 8)
+
+				a8 := uint8(255)
+
+				couleur := color.RGBA{R8, G8, B8, a8}
+				// Modification de la couleur du pixel sur l'image final par la couleur filtré
+				imageF.Set(x, y, couleur)
+
 			}
 		}
 	}
@@ -125,14 +155,13 @@ func traitement_bande_NoirBlanc(borne_sup int, borne_inf int, bounds image.Recta
 func main() {
 	var wg sync.WaitGroup
 	// Nombre de goroutines à utiliser
-	n := 4
+	n := 5
 	wg.Add(n)
 
 	var filtre int
 	fmt.Print("Filtre 1 (n&b) ou 2(flou) ? :")
 	fmt.Scan(&filtre)
 
-	noyau := creation_matrice()
 	// Import de l'image à partir du chemin
 	file, err := os.Open("pomme.png")
 	if err != nil {
@@ -154,30 +183,31 @@ func main() {
 	// Calcul des bornes de la premier bande de l'image pour n bande et de l'intervale de chaque bande
 	intervale := bounds.Max.Y / n
 	b_inf := 0
-	b_sup := intervale
+	b_sup := 0
 
 	if filtre == 1 {
 		// Pour chaque bande, lancer la go routine
 		for i := 0; i < n; i++ {
-			go traitement_bande_NoirBlanc(b_sup, b_inf, bounds, imageI, imageF, &wg)
-			b_inf = b_inf + intervale
 			if i != n-1 {
 				b_sup = b_inf + intervale
 			} else {
 				b_sup = bounds.Max.Y
 			}
+			go traitement_bande_NoirBlanc(b_sup, b_inf, bounds, imageI, imageF, &wg)
+			b_inf = b_inf + intervale
 		}
 	}
 	if filtre == 2 {
+		noyau := creation_matrice()
 		// Pour chaque bande, lancer la go routine
 		for i := 0; i < n; i++ {
-			go traitement_bande_Gaussien(noyau, b_sup, b_inf, bounds, imageI, imageF, &wg)
-			b_inf = b_inf + intervale
 			if i != n-1 {
 				b_sup = b_inf + intervale
 			} else {
 				b_sup = bounds.Max.Y
 			}
+			go traitement_bande_Gaussien(noyau, b_sup, b_inf, bounds, imageI, imageF, &wg)
+			b_inf = b_inf + intervale
 		}
 
 	}
