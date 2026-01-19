@@ -65,37 +65,55 @@ func filtreNoirBlanc(bounds image.Rectangle, imageI image.Image, imageF *image.R
 
 func filtreFlouGaussien(bounds image.Rectangle, imageI image.Image, imageF *image.RGBA, noyau [taille][taille]float64) {
 	taille := len(noyau)
+	centre := (taille - 1) / 2
 	// Pour tous les pixels sauf les bords
 	for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
-		if bounds.Min.Y+taille < y && bounds.Max.Y-taille > y {
-			for x := bounds.Min.X; x < bounds.Max.X; x++ {
-				if bounds.Min.X+taille < x && bounds.Max.X-taille > x {
-					R := 0.0
-					G := 0.0
-					B := 0.0
-					// Pour tous les voisins dans le noyau :
-					for i := 0; i < taille; i++ {
-						for j := 0; j < taille; j++ {
-							// Si on est pas sur le centre :
-							if i != taille && j != taille {
-								// Récupération de la couleur initial du pixel dans l'image initiale, et calcul du flou
-								r, g, b, _ := imageI.At(x, y).RGBA()
-								R += float64(r) * noyau[i][j]
-								G += float64(g) * noyau[i][j]
-								B += float64(b) * noyau[i][j]
-							}
-						}
-					}
-					// Conversion en 8 bits (0–255)
-					R8 := uint8(R)
-					G8 := uint8(G)
-					B8 := uint8(B)
+		for x := bounds.Min.X; x < bounds.Max.X; x++ {
+			R32, G32, B32, _ := imageI.At(x, y).RGBA()
+			if bounds.Min.Y+taille/2 > y && bounds.Max.Y-taille/2 < y {
+				if bounds.Min.X+taille/2 > x && bounds.Max.X-taille/2 < x {
+					// Si on est sur les bords, on recopie tel quel
+					R8 := uint8(R32 >> 8)
+					G8 := uint8(G32 >> 8)
+					B8 := uint8(B32 >> 8)
 					a8 := uint8(255)
-
 					couleur := color.RGBA{R8, G8, B8, a8}
-					// Modification de la couleur du pixel sur l'image final par la couleur filtré
+					// Modification de la couleur du pixel sur l'image final par la couleur non filtrée
 					imageF.Set(x, y, couleur)
+
 				}
+			} else {
+				// Sinon, on floute
+				R_acc := 0.0
+				G_acc := 0.0
+				B_acc := 0.0
+				// Pour tous les voisins dans le noyau :
+				for i := 0; i < taille; i++ {
+					for j := 0; j < taille; j++ {
+						// Récupération de la couleur initial du pixel dans l'image initiale, et calcul du flou
+						r, g, b, _ := imageI.At(x+i-int(centre), y+j-int(centre)).RGBA()
+
+						R_acc += float64(r) * noyau[i][j]
+						G_acc += float64(g) * noyau[i][j]
+						B_acc += float64(b) * noyau[i][j]
+					}
+				}
+				// Conversion en base 16, au cas où on dépasse 65535 ou qu'on soit négatif, ce qui serait un problème pour mettre sur 8bits
+				R_acc = min(max(R_acc, 0), 65535)
+				G_acc = min(max(G_acc, 0), 65535)
+				B_acc = min(max(B_acc, 0), 65535)
+
+				// Conversion en 8 bits (0–255)
+				R8 := uint8(uint16(R_acc) >> 8)
+				G8 := uint8(uint16(G_acc) >> 8)
+				B8 := uint8(uint16(B_acc) >> 8)
+
+				a8 := uint8(255)
+
+				couleur := color.RGBA{R8, G8, B8, a8}
+				// Modification de la couleur du pixel sur l'image final par la couleur filtré
+				imageF.Set(x, y, couleur)
+
 			}
 		}
 	}
