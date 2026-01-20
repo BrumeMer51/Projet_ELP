@@ -2,7 +2,6 @@
 --- Imports nécessaires :
 import Browser
 import Html exposing (..)
-import Html.Attributes exposing (style)
 import Html.Events exposing (..)
 import Http
 import Json.Decode exposing (Decoder, map2, field, list, string)
