@@ -91,8 +91,7 @@ update msg model =
     PickIndex i ->
       case model of 
         SuccessFile def -> let
-            motChoisi = List.head(List.drop i def.fichier.liste)
-            newDef = { def | mot = motChoisi }
+            newDef = { def | mot = List.head(List.drop i def.fichier.liste) }
           in 
             (SuccessFile newDef, Cmd.msg RecupDef)
           
