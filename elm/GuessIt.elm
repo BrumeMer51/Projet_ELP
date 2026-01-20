@@ -5,7 +5,7 @@ import Html exposing (..)
 import Html.Attributes exposing (style)
 import Html.Events exposing (..)
 import Http
-import Json.Decode exposing (Decoder, map4, field, int, string)
+import Json.Decode exposing (Decoder, map2, field, list, string)
 import Random
 
 
@@ -23,28 +23,24 @@ main =
 --- ici définir le type Model, le type Definition et la fonction init
 type Model
   = Failure
-  | Loading
+  | LoadingFile
+  | LoadingDef
   | Success Definition 
 
+type alias Fichier =
+  {
+    liste : List String
+  }
+
 type alias Definition =
-  { mot : String
-  , --- à compléter
-  }
-
-
---from here 
-type alias Show =
-  { guess : String
+  { fichier : Fichier
+  , mot : String
+  , definitions : List (List String)
+  , guess : String
   , switch : Int
-  , answer : String
-  , definition : List (List String)
   }
 
 
-init : Show
-init =
-  Show "" 0 "word" [["noun", "1", "2", "3"], ["verb", "1", "2"]]
---to here for the model of View
 
 
 init : () -> (Model, Cmd Msg)
@@ -57,20 +53,62 @@ init _ =
 type Msg
   = Guess String
   | SwitchAnswer Int
+  | GetFile
+  | GotFile Fichier
+  | PickIndex (Int)
+  | RecupDef
+  | GotDefFinal (Result Http.Error Definition)
 
--- Gère les message des intéraction utilisateur
-update : Msg -> Show -> Show
+-- Gère les actions initiales et les messages des interactions utilisateur
+update : Msg -> Definition -> Definition
 update msg model =
   case msg of
+    --- Met à jour le guess
     Guess guess ->
       { model | guess = guess }
 
+    --- Détermine l'affichage ou non de la réponse
     SwitchAnswer switch ->
         case switch of 
             0 -> 
               { model | switch = 1}
             _ -> 
               { model | switch = 0}
+      
+    --- Téléchargement du fichier dès le début :
+    GetFile ->
+      (LoadingFile, downloadFile)
+      
+    --- Quand on a téléchargé le fichier, on lance le choix du mot :
+    GotFile fichier ->
+      let
+        newModel = SuccessFile { fichier = fichier, mot = "", definitions = [] }
+      in
+        (newModel, randomIndexCmd fichier.liste) 
+        
+    --- Quand il faut tirer un mot aléatoire : (si le fichier est bien chargé)
+    PickIndex i ->
+      case model of 
+        SuccessFile def -> let
+          motChoisi = List.head(List.drop i def.fichier.liste)
+          newDef = { def | mot = motChoisi }
+          in 
+          (SuccessFile newDef, Cmd.msg RecupDef)
+          
+    --- Une fois le mot choisi, on récupère le json de la définition sur le site :
+    RecupDef -> 
+      case model of 
+        SuccessFile def -> (LoadingDef, dowloadDef def)
+        _ -> (Failure, Cmd.none)
+        
+    --- Quand la définition est récupérée, on l'affiche :
+    GotDefFinal result ->
+      case result of
+        Ok def ->
+          (SuccessDef def, Cmd.none)
+
+        Err _ ->
+          (Failure, Cmd.none)
 
 
 -- SUBSCRIPTIONS
@@ -80,10 +118,7 @@ subscriptions model =
 
 
 --- View :
---- ici définir la fonction view -> Model -> Html Msg et la fonction viewDef -> Model -> Html Msg
---- Principe : parcourir des listes et afficher avec la bonne police/taille de caractères..., et vérification du texte
-
-view : Show -> Html Msg
+view : Definition -> Html Msg
 view model =
   div []
     [ viewAnswer model
@@ -100,7 +135,7 @@ viewInput t p v toMsg =
   input [ type_ t, placeholder p, value v, onInput toMsg ] []
 
 -- Affiche ou cache la réponse
-viewAnswer : Show -> Html msg
+viewAnswer : Definition -> Html msg
 viewAnswer model =
   if model.switch == 1 then
     div [ style "color" "black" ][text "The word is ", text model.answer]
@@ -126,7 +161,7 @@ viewDefinition model =
         )
 
 -- Determine si la réponse est correcte 
-viewValidation : Show -> Html msg
+viewValidation : Definition -> Html msg
 viewValidation model =
   if model.guess == model.answer then
     div [ style "color" "green" ] [ text "You guessed right, the word is ", text model.answer]
@@ -134,5 +169,45 @@ viewValidation model =
     div [ style "color" "red" ] [ text "Try to guess" ]
 
 --- HTTP :
---- ici définir la fonction getRandomWord et la fonction defDecoder
---- Principe : générer un nb aléatoire entre 0 et 999, récupérer la définition du mot concerné avec un requête HTTP, et décodé le json pour stocké tous les champs
+downloadFile : Cmd Msg
+downloadFile = 
+  Http.get{
+    url = "https://perso.liris.cnrs.fr/tristan.roussillon/GuessIt/thousand_words_things_explainer.txt"
+    , expect = Http.expectString GotFile fileDecoupe
+  }
+
+dowloadDef : def -> Cmd Msg
+dowloadDef def = 
+  Http.get{
+    url = "https://api.dictionaryapi.dev/api/v2/entries/en/" ++ def.mot
+    , expect = Http.expectJson GotDefFinal (defDecoder def.fichier def.mot)
+  }
+
+
+
+
+
+--- Fonctions annexes : 
+
+randomIndexCmd : List String -> Cmd Msg
+randomIndexCmd wordList =
+    Random.generate PickIndex (Random.int 0 998)
+
+fileDecoupe : String -> Fichier
+fileDecoupe s = {liste = String.split " " s}
+
+
+defDecoder : Fichier -> String -> Decoder Definition
+defDecoder fichier mot =
+    map Definition
+        (\defs -> { fichier = fichier, mot = mot, definitions = defs })
+        (field "meanings" (list meaningDecoder))
+  
+
+meaningDecoder = 
+  map2
+    (\partOfSpeech defs ->
+            partOfSpeech :: defs
+      )
+      (field "partOfSpeech" string)
+      (field "definitions" (list (field "definition" string)))
