@@ -55,7 +55,6 @@ type Msg
   | GetFile
   | GotFileResult (Result Http.Error String)
   | PickIndex (Int)
-  | RecupDef
   | GotDefFinal (Result Http.Error Definition)
 
 -- Gère les actions initiales et les messages des interactions utilisateur
@@ -65,16 +64,18 @@ update msg model =
     --- Met à jour le guess
     Guess guess -> case model of
         Success def -> let newDef = { def | guess = guess} in ( Success newDef, Cmd.none )
-    
+        _ -> (model, Cmd.none)
 
     --- Détermine l'affichage ou non de la réponse
     SwitchAnswer switch ->
         case switch of 
             0 -> case model of
               Success def -> let newDef = {def | switch = 1} in ( Success newDef, Cmd.none )
+              _ -> (model, Cmd.none)
             _ -> case model of
               Success def -> let newDef = {def | switch = 0} in ( Success newDef, Cmd.none )
-      
+              _ -> (model, Cmd.none)
+              
     --- Téléchargement du fichier dès le début :
     GetFile ->
       (LoadingFile, downloadFile)
@@ -107,6 +108,7 @@ update msg model =
                               { def
                               | mot = List.head(List.drop i def.fichier.liste)|> Maybe.withDefault "" 
                               } in (LoadingDef, dowloadDef def)
+        _ -> (model, Cmd.none)
           
 
         
@@ -138,6 +140,9 @@ view model = case model of
       , br [] []
       , button [ onClick (SwitchAnswer def.switch) ] [ text "Afficher la réponse ?" ]
       ]
+  LoadingDef -> div[] [text "Erreur view LoadingDef"]
+  LoadingFile -> div[] [text "Erreur view LoadingFile"]
+  Failure -> div[] [text "Erreur view Failure"]
 
 -- Crée la zone d'écriture de la tentative
 viewInput : String -> String -> String -> (String -> msg) -> Html msg
@@ -152,6 +157,9 @@ viewAnswer model = case model of
       div [ style "color" "black" ][text "The word is ", text def.mot]
     else
       div [ style "color" "black" ][text "Here are the definitions : "]
+  LoadingDef -> div[] [text "Erreur viewAnswer LoadingDef"]
+  LoadingFile -> div[] [text "Erreur viewAnswer LoadingFile"]
+  Failure -> div[] [text "Erreur viewAnswer Failure"]
 
 -- Affiche la liste des définition en mettant la classe grammaticale en avant
 viewDefinition : Model -> Html msg
@@ -172,6 +180,9 @@ viewDefinition model = case model of
             )
             def.definitions
         )
+  LoadingDef -> div[] [text "Erreur viewDefinition LoadingDef"]
+  LoadingFile -> div[] [text "Erreur viewDefinition LoadingFile"]
+  Failure -> div[] [text "Erreur viewDefinition Failure"]
 
 -- Determine si la réponse est correcte 
 viewValidation : Model -> Html msg
@@ -181,6 +192,9 @@ viewValidation model =case model of
       div [ style "color" "green" ] [ text "You guessed right, the word is ", text def.mot]
     else
       div [ style "color" "red" ] [ text "Try to guess" ]
+  LoadingDef -> div[] [text "Erreur viewValidation LoadingDef"]
+  LoadingFile -> div[] [text "Erreur viewValidation LoadingFile"]
+  Failure -> div[] [text "Erreur viewValidation Failure"]
 
 --- HTTP :
 downloadFile : Cmd Msg
