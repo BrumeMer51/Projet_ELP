@@ -7,6 +7,8 @@ import Html.Events exposing (..)
 import Http
 import Json.Decode exposing (Decoder, map2, field, list, string)
 import Random
+import Html.Attributes exposing (..)
+import Html.Events exposing (onInput, onClick)
 
 
 --- Main :
