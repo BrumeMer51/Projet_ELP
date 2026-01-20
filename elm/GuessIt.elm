@@ -91,10 +91,10 @@ update msg model =
     PickIndex i ->
       case model of 
         SuccessFile def -> let
-          motChoisi = List.head(List.drop i def.fichier.liste)
-          newDef = { def | mot = motChoisi }
+            motChoisi = List.head(List.drop i def.fichier.liste)
+            newDef = { def | mot = motChoisi }
           in 
-          (SuccessFile newDef, Cmd.msg RecupDef)
+            (SuccessFile newDef, Cmd.msg RecupDef)
           
     --- Une fois le mot choisi, on récupère le json de la définition sur le site :
     RecupDef -> 
