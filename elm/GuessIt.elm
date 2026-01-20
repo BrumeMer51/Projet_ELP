@@ -83,10 +83,21 @@ update msg model =
     GotFileResult result ->
       case result of
         Ok contenu ->
-              let fichier = fileDecoupe contenu
-                  newModel = Success { fichier = fichier, mot = "", definitions = [], guess = "", switch = 0 }
-              in
-              (newModel, randomIndexCmd fichier.liste)
+          let
+            fichier = fileDecoupe contenu
+            newModel =
+              Success
+                { fichier = fichier
+                , mot = ""
+                , definitions = []
+                , guess = ""
+                , switch = 0
+                }
+          in
+          ( newModel, randomIndexCmd fichier.liste )
+
+        Err _ ->
+          ( Failure, Cmd.none )
 
         
     --- Quand il faut tirer un mot aléatoire : (si le fichier est bien chargé)
@@ -176,7 +187,7 @@ downloadFile : Cmd Msg
 downloadFile = 
   Http.get{
     url = "https://perso.liris.cnrs.fr/tristan.roussillon/GuessIt/thousand_words_things_explainer.txt"
-    , expect = Http.expectString (\s -> GotFileResult (fileDecoupe s))
+    , expect = Http.expectString GotFileResult
   }
 
 dowloadDef : Definition -> Cmd Msg
