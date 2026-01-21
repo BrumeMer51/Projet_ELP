@@ -7,3 +7,5 @@ Le nom de l'image après le traitement du filtre peut aussi être modifié depui
 Les codes Serveur.go et Client.go sont comme, leurs noms l'indiquent, les versions serveur et client de la fonction de filtre.
 Après exécution, le client demande à l'utilisateur d'entrer le chemin de l'image et le nom à donner à l'image filtrée. 
 Le serveur crée la nouvelle image et renvoie un message indiquant que la tâche est réalisée.
+
+Deux filtes sont gérés, un filtre noir et blanc qui renvoit l'image en teintes grises et un filtre de flou gaussien qui rend flou toute l'image sauf les bords.
