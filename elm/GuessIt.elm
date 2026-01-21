@@ -251,7 +251,14 @@ racineDecoder =
 
 meaningsDecoder : Decoder (List (List String))
 meaningsDecoder =
-    Json.Decode.field "meanings" (Json.Decode.list listDefinitionsDecoder)
+    Json.Decode.field "meanings" (Json.Decode.list soloMeaningDecoder)
+
+soloMeaningDecoder : Decoder (List String)
+soloMeaningDecoder =
+    Json.Decode.map2
+        (\part defs -> part :: defs)
+        (Json.Decode.field "partOfSpeech" Json.Decode.string)
+        listDefinitionsDecoder
 
 listDefinitionsDecoder : Decoder (List String)
 listDefinitionsDecoder =
