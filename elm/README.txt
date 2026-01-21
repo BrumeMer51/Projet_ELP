@@ -1,1 +1,1 @@
-
+Pour lancer le code, il faut télécharger les dossiers src et static, car le fichier dans lequel on pioche le mot au hasard s'y trouve. En effet, quand on essaye d'implémenter dans le code le fait de le télécharger en ligne, on rencontre une erreur CORS. Nous avons donc préféré le stocker localement.
