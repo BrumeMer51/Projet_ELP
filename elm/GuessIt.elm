@@ -1,3 +1,5 @@
+module Main exposing (..)
+
 --- Imports nécessaires :
 import Browser
 import Html exposing (..)
@@ -21,7 +23,8 @@ main =
 --- Model :
 --- ici définir le type Model, le type Definition et la fonction init
 type Model
-  = Failure
+  = FailureFile
+  | FailureDef
   | LoadingFile
   | LoadingDef
   | Success Definition 
@@ -83,22 +86,21 @@ update msg model =
     --- Quand on a téléchargé le fichier, on lance le choix du mot :
     GotFileResult result ->
       case result of
-        Ok contenu ->
+        Ok contenu -> 
           let
             fichier = fileDecoupe contenu
             newModel =
               Success
-                { fichier = fichier
-                , mot = ""
-                , definitions = []
-                , guess = ""
-                , switch = 0
-                }
+              { fichier = fichier
+              , mot = ""
+              , definitions = []
+              , guess = ""
+              , switch = 0
+              }
           in
-          ( newModel, randomIndexCmd fichier.liste )
-
-        Err _ ->
-          ( Failure, Cmd.none )
+            ( newModel, randomIndexCmd fichier.liste )
+        Err _ -> (FailureFile, Cmd.none)
+          
 
         
     --- Quand il faut tirer un mot aléatoire : (si le fichier est bien chargé)
@@ -107,7 +109,7 @@ update msg model =
         Success def -> let newDef = 
                               { def
                               | mot = List.head(List.drop i def.fichier.liste)|> Maybe.withDefault "" 
-                              } in (LoadingDef, dowloadDef def)
+                              } in (LoadingDef, dowloadDef newDef)
         _ -> (model, Cmd.none)
           
 
@@ -119,7 +121,7 @@ update msg model =
           (Success def, Cmd.none)
 
         Err _ ->
-          (Failure, Cmd.none)
+          (FailureDef, Cmd.none)
 
 
 -- SUBSCRIPTIONS
@@ -142,7 +144,8 @@ view model = case model of
       ]
   LoadingDef -> div[] [text "Erreur view LoadingDef"]
   LoadingFile -> div[] [text "Erreur view LoadingFile"]
-  Failure -> div[] [text "Erreur view Failure"]
+  FailureDef -> div[] [text "Erreur view FailureDef"]
+  FailureFile -> div[] [text "Erreur view FailureFile"]
 
 -- Crée la zone d'écriture de la tentative
 viewInput : String -> String -> String -> (String -> msg) -> Html msg
@@ -159,7 +162,8 @@ viewAnswer model = case model of
       div [ style "color" "black" ][text "Here are the definitions : "]
   LoadingDef -> div[] [text "Erreur viewAnswer LoadingDef"]
   LoadingFile -> div[] [text "Erreur viewAnswer LoadingFile"]
-  Failure -> div[] [text "Erreur viewAnswer Failure"]
+  FailureDef -> div[] [text "Erreur viewAnswer FailureDef"]
+  FailureFile -> div[] [text "Erreur viewAnswer FailureFile"]
 
 -- Affiche la liste des définition en mettant la classe grammaticale en avant
 viewDefinition : Model -> Html msg
@@ -182,7 +186,8 @@ viewDefinition model = case model of
         )
   LoadingDef -> div[] [text "Erreur viewDefinition LoadingDef"]
   LoadingFile -> div[] [text "Erreur viewDefinition LoadingFile"]
-  Failure -> div[] [text "Erreur viewDefinition Failure"]
+  FailureDef -> div[] [text "Erreur viewDefinition FailureDef"]
+  FailureFile -> div[] [text "Erreur viewDefinition FailureFile"]
 
 -- Determine si la réponse est correcte 
 viewValidation : Model -> Html msg
@@ -194,13 +199,14 @@ viewValidation model =case model of
       div [ style "color" "red" ] [ text "Try to guess" ]
   LoadingDef -> div[] [text "Erreur viewValidation LoadingDef"]
   LoadingFile -> div[] [text "Erreur viewValidation LoadingFile"]
-  Failure -> div[] [text "Erreur viewValidation Failure"]
+  FailureDef -> div[] [text "Erreur viewValidation FailureDef"]
+  FailureFile -> div[] [text "Erreur viewValidation FailureFile"]
 
 --- HTTP :
 downloadFile : Cmd Msg
 downloadFile = 
   Http.get{
-    url = "https://perso.liris.cnrs.fr/tristan.roussillon/GuessIt/thousand_words_things_explainer.txt"
+    url = "../static/thousand_words_things_explainer.txt"
     , expect = Http.expectString GotFileResult
   }
 
@@ -208,7 +214,7 @@ dowloadDef : Definition -> Cmd Msg
 dowloadDef def = 
   Http.get{
     url = "https://api.dictionaryapi.dev/api/v2/entries/en/" ++ def.mot
-    , expect = Http.expectJson GotDefFinal (defDecoder def.fichier def.mot)
+    , expect = Http.expectJson GotDefFinal (defTotDecoder def.fichier def.mot)
   }
 
 
@@ -224,18 +230,35 @@ randomIndexCmd wordList =
 fileDecoupe : String -> Fichier
 fileDecoupe s = {liste = String.split " " s}
 
-
-defDecoder : Fichier -> String -> Decoder Definition
-defDecoder fichier mot =
+--- Pour décoder le json, on a une suite de fonctions qui vont chacune rentrer dans la couche suivante du json, pour extraire à la fin les définitions
+defTotDecoder : Fichier -> String -> Decoder Definition
+defTotDecoder fichier mot =
     Json.Decode.map
-        (\defs -> { fichier = fichier, mot = mot, definitions = defs, guess = "", switch = 0 })
-        (field "meanings" (Json.Decode.list meaningDecoder))
-  
+        (\defs ->
+            { fichier = fichier
+            , mot = mot
+            , definitions = defs
+            , guess = ""
+            , switch = 0
+            }
+        )
+        racineDecoder
 
-meaningDecoder = 
-  map2
-    (\partOfSpeech defs ->
-            partOfSpeech :: defs
-      )
-      (field "partOfSpeech" string)
-      (field "definitions" (Json.Decode.list (field "definition" string)))
+racineDecoder : Decoder (List (List String))
+racineDecoder =
+    Json.Decode.list meaningsDecoder
+        |> Json.Decode.map List.concat
+
+meaningsDecoder : Decoder (List (List String))
+meaningsDecoder =
+    Json.Decode.field "meanings" (Json.Decode.list listDefinitionsDecoder)
+
+listDefinitionsDecoder : Decoder (List String)
+listDefinitionsDecoder =
+    Json.Decode.field "definitions" (Json.Decode.list definitionDecoder)
+
+
+definitionDecoder : Decoder String
+definitionDecoder =
+    Json.Decode.field "definition" Json.Decode.string
+  
