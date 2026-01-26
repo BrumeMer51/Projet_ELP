@@ -10,6 +10,7 @@ import Html.Events exposing (onInput, onClick)
 
 --- Imports des modules :
 import Decodage as FctJson
+import Type exposing (Model(..), Fichier, Definition, Msg(..))
 
 
 --- Main :
@@ -22,27 +23,6 @@ main =
     }
 
 
---- Model :
---- ici définir le type Model, le type Definition et la fonction init
-type Model
-  = FailureFile
-  | FailureDef
-  | LoadingFile
-  | LoadingDef
-  | Success Definition 
-
-type alias Fichier =
-  {
-    liste : List String
-  }
-
-type alias Definition =
-  { fichier : Fichier
-  , mot : String
-  , definitions : List (List String)
-  , guess : String
-  , switch : Int
-  }
 
 
 
@@ -53,14 +33,6 @@ init _ =
 
 
 --- Update :
---- ici définir le type Msg et la fonction update
-type Msg
-  = Guess String
-  | SwitchAnswer Int
-  | GetFile
-  | GotFileResult (Result Http.Error String)
-  | PickIndex (Int)
-  | GotDefFinal (Result Http.Error Definition)
 
 -- Gère les actions initiales et les messages des interactions utilisateur
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -218,6 +190,9 @@ dowloadDef def =
     url = "https://api.dictionaryapi.dev/api/v2/entries/en/" ++ def.mot
     , expect = Http.expectJson GotDefFinal (FctJson.defTotDecoder def.fichier def.mot)
   }
+
+
+
 
 
 --- Fonctions annexes : 
