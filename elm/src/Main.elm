@@ -2,11 +2,8 @@ module Main exposing (..)
 
 --- Imports nécessaires :
 import Browser
-import Html exposing (..)
 import Http
 import Random
-import Html.Attributes exposing (..)
-import Html.Events exposing (onInput, onClick)
 
 --- Imports des modules :
 import Decodage as FctJson
