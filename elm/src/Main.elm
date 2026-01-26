@@ -22,11 +22,6 @@ main =
     , view = view
     }
 
-
-
-
-
-
 init : () -> (Model, Cmd Msg)
 init _ =
   (LoadingFile, downloadFile)
