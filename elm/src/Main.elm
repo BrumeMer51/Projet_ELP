@@ -4,10 +4,12 @@ module Main exposing (..)
 import Browser
 import Html exposing (..)
 import Http
-import Json.Decode exposing (Decoder, map, map2, field, list, string)
 import Random
 import Html.Attributes exposing (..)
 import Html.Events exposing (onInput, onClick)
+
+--- Imports des modules :
+import Decodage as FctJson
 
 
 --- Main :
@@ -214,11 +216,8 @@ dowloadDef : Definition -> Cmd Msg
 dowloadDef def = 
   Http.get{
     url = "https://api.dictionaryapi.dev/api/v2/entries/en/" ++ def.mot
-    , expect = Http.expectJson GotDefFinal (defTotDecoder def.fichier def.mot)
+    , expect = Http.expectJson GotDefFinal (FctJson.defTotDecoder def.fichier def.mot)
   }
-
-
-
 
 
 --- Fonctions annexes : 
@@ -230,42 +229,5 @@ randomIndexCmd wordList =
 fileDecoupe : String -> Fichier
 fileDecoupe s = {liste = String.split " " s}
 
---- Pour décoder le json, on a une suite de fonctions qui vont chacune rentrer dans la couche suivante du json, pour extraire à la fin les définitions
-defTotDecoder : Fichier -> String -> Decoder Definition
-defTotDecoder fichier mot =
-    Json.Decode.map
-        (\defs ->
-            { fichier = fichier
-            , mot = mot
-            , definitions = defs
-            , guess = ""
-            , switch = 0
-            }
-        )
-        racineDecoder
 
-racineDecoder : Decoder (List (List String))
-racineDecoder =
-    Json.Decode.list meaningsDecoder
-        |> Json.Decode.map List.concat
-
-meaningsDecoder : Decoder (List (List String))
-meaningsDecoder =
-    Json.Decode.field "meanings" (Json.Decode.list soloMeaningDecoder)
-
-soloMeaningDecoder : Decoder (List String)
-soloMeaningDecoder =
-    Json.Decode.map2
-        (\part defs -> part :: defs)
-        (Json.Decode.field "partOfSpeech" Json.Decode.string)
-        listDefinitionsDecoder
-
-listDefinitionsDecoder : Decoder (List String)
-listDefinitionsDecoder =
-    Json.Decode.field "definitions" (Json.Decode.list definitionDecoder)
-
-
-definitionDecoder : Decoder String
-definitionDecoder =
-    Json.Decode.field "definition" Json.Decode.string
   
