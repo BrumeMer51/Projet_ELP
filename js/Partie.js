@@ -13,7 +13,7 @@ export class Partie {
         this.deck = [];
         this.defausse = [];
         this.tour_courant = 0;
-        this.fin_tour = false;
+        this.flip7 = null
     }
 
     init() {
@@ -33,7 +33,7 @@ export class Partie {
         let valide = false
         let nb_joueurs = 0
         while (valide != true) {
-            nb_joueurs = prompt("Combien de joueurs ? ")
+            nb_joueurs = parseInt(prompt("Combien de joueurs ? "))
             if (nb_joueurs == 0 || nb_joueurs == 1) {
                 console.log("Il faut au moins 2 joueurs")
             } else {
@@ -50,19 +50,33 @@ export class Partie {
     }
 
     jeu() {
-        while (!this.verifFinPartie) {
+        // On lance la partie :
+        while (!this.verifFinPartie()) {
+            // Initilisation d'un tour :
             this.initTour()
-            // Lancer la première distribution de cartes
-            while (this.verifActifs) {
-                for (let i = 0; i < this.l_joueurs.length; i ++) {
+            /* Lancer la première distribution de cartes */
+
+            // Tant que le tour doit continuer :
+            while (!this.verifActifs()) {
+                let i = 0
+                // Pour chaque joueur, tant qu'on a pas un flip7 :
+                while (!this.flip7 && i < this.l_joueurs.length ) {
                     let j = this.l_joueurs[i]
                     if (j.statut == "Actif") {
                         console.log("Vos cartes sont : ")
-                        j.affichageJoueur()
-                        jouer(j, this.tour_courant, this.deck)
+                        console.log(j.affichageJoueur())
+                        jouer(j)
                     }
+                    i ++
                 }
 
+            }
+
+            // A la fin d'un tour : 
+            this.ecritureTour()
+            for (var j of this.l_joueurs) {
+                j.total += j.tour.somme()
+                j.tour = new Tour()
             }
             
         }
@@ -72,8 +86,9 @@ export class Partie {
     initTour(){
         /* On incrémente le compteur de tour et on passe tous les joueurs en état actif */
         this.tour_courant += 1
-        for (let i = 0; i < this.l_joueurs.length; i ++) {
-                this.l_joueurs[i].statut = "Actif"
+        this.flip7 = null
+        for (var j of this.l_joueurs) {
+                j.statut = "Actif"
         }
     }
 
@@ -96,11 +111,11 @@ export class Partie {
         }
         return res
     }
-    
+
     ecritureTour() {
-        this.ajout_fichier("Tour " + string(this.tour_courant))
-        for (let i = 0; i < this.l_joueurs.length; i ++){
-            let infos = this.l_joueurs[i].affichageJoueur()
+        this.ajout_fichier(`Tour ${this.tour_courant}`)
+        for (const j of this.l_joueurs){
+            let infos = j.affichageJoueur()
             this.ajout_fichier(infos)
         }
         this.ajout_fichier("\n")
@@ -113,6 +128,23 @@ export class Partie {
         if (err) console.error(err);
         else console.log("Ligne ajoutée !");
         });
+    }
+
+    jouer(joueur){
+        let valide = false 
+        while (!valide) {
+            let choix = prompt("Que voulez vous faire ? \n 1)Rester \n 2)Piocher \n Choix : ")
+            if (choix == "1"){
+                joueur.statut = "Passif"
+                valide = true
+            } else if (choix == "2") {
+                let nouvelle_carte = piocher_carte()
+                appliquer_carte(joueur, nouvelle_carte)
+                valide = true
+            } else {
+                console.log("Mauvaise entrée, réessayez \n")
+            }
+        }
     }
        
 }
