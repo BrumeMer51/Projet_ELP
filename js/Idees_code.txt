@@ -1,0 +1,155 @@
+On a une liste de dico (object en js) qui rassemble toutes les infos des joueurs : 
+l_joueurs = [
+    "Alice" : 
+    {
+        statut : "Actif"
+        total : 76,
+        tours : [
+            {
+                "nombres" : [12,2,0],
+                "actions" : ["second chance"],
+                "modificateur" : ["+2"] 
+            },
+            {
+                "nombres" : [12,2,0],
+                "actions" : ["second chance"],
+                "modificateur" : ["+2"]
+            }
+        ]
+    },
+    "Charlotte" :
+     {
+        statut : "Passif"
+        total : 69,
+        tours : [
+            {
+                "nombres" : [10,1,3],
+                "actions" : ["],
+                "modificateur" : ["+4"] 
+            },
+            {
+                "nombres" : [11,5],
+                "actions" : [],
+                "modificateur" : ["+6"]
+            }
+        ]
+    }
+]
+
+
+Pendant un tour, on modifie l'objet "tours[i]" du joueur, et on calcule les points totaux à la fin.
+
+Pseudo-code : 
+
+fichier = creation_fichier()
+l_joueurs = []
+nb_joueurs = input("Combien de joueurs ?)
+
+Pour i in range(nb_joueur) :
+    nom = input("Quel nom ?")
+    let joueur = {
+        nom : nom 
+        statut = "Actif"
+        total = 0
+    }
+    
+
+
+Tant qu'un joueur n'a pas 200 points au moins :
+    On lance un tour :
+        Tous les joueurs sont mis en statut Actif
+        Pour chaque joueur :
+            carte = pioche_carte(deck)
+            appliquerCarte(joueur, carte, tour)
+        FinPour
+
+        Tant qu'il y a au moins un joueur actif :
+            Pour chaque joueur :
+                Si joueur.statut = "Actif" :
+                    Afficher ses cartes 
+                    jouer(joueur, tour, deck)
+        FinTant que 
+
+        Pour chaque joueur :
+            joueur.total += calcul_points(joueur, tour)
+
+        A la fin du tour, on écrit les résultats dans la suite du fichier de la partie et les cartes sont mises dans la défausse
+FinTant que
+
+
+
+
+Fonctions annexes : 
+
+pioche_carte(deck) :
+    Si il reste au moins 1 carte dans le deck :
+        index = random(0, len(deck) - 1)
+        carte = deck[i]
+    Sinon : 
+        --> mettre la défausse dans le deck
+
+    return carte
+
+
+appliquerCarte(l_joueurs, joueur, carte, tour) :
+    Si la nouvelle_carte est une action != "Seconde chance" : carteAction(carte, l_joueurs, tour)
+    SinonSi c'est un modificateur : on l'ajoute aux cartes du tour 
+    Sinon si c'est un nombre pas déjà présent dans la liste : on l'ajoute au tour 
+    FinSi
+
+    Si il y a 7 cartes différentes : 
+        joueur.point += 15
+        Tous les joueurs sont mis en statut Passif
+
+
+jouer(l_joueurs, joueur, tour, deck) :
+    choix = input ("Rester ou piocher ?")
+    Si choix == rester :
+        joueur.statut = "Passif"
+    Sinon :
+        nouvelle_carte = pioche_carte(deck)
+        appliquerCarte(l_joueurs, joueur, carte, tour) :
+    FinSi
+
+
+calcul_points(joueur, tour) :
+    res_nombres = 0
+    res_modifs = 0
+    Pour toutes les cartes "Nombres" :
+        res_nombres += nombre 
+    Pour toutes les cartes "modificateur" :
+        Si carte == "x2" :
+            res_nombres = 2*res_nombres
+        Sinon :
+            res_modifs += carte 
+    res_tot = res_nombres + res_modifs
+    joueur.total += res_tot
+
+
+
+carteAction(carte, l_joueurs, tour) :
+    Afficher les infos de tous les joueurs
+    valide = False
+    while not valide :
+        victime = input("Sur qui appliquer (numéro du joueur)?)
+        Si l_joueurs[victime].statut == "Actif" :
+            valide = True
+    victime = l_joueurs.victime
+    
+    Si carte == "Freeze" :
+        victime.statut = "Passif"
+        --> On met toutes ses cartes du tour à 0 ?
+    SinonSi carte == "Flip three" :
+        for i in range(3) :
+            carte = pioche_carte(deck)
+            appliquerCarte(l_joueurs, victime, carte, tour)
+
+    
+        
+
+affichageJoueur(joueur) :
+
+
+    
+
+
