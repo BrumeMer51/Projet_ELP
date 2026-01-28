@@ -28,6 +28,7 @@ export class Partie {
         });
 
         // Initialisation du deck : create_deck()
+        this.deck = this.create_deck()
 
         // Initialisation de la liste des joueurs :
         let valide = false
@@ -48,6 +49,39 @@ export class Partie {
             this.l_joueurs.push(joueur)
             }
     }
+
+    
+    create_deck() {
+        const card0 = new Card("number", 0);
+        let deck = [];
+        deck.push(card0);
+        for(let numberi = 1; numberi <= 12; numberi = numberi + 1) {
+            for(let numberj = numberi; numberj <= 12; numberj = numberj + 1) {
+                const card = new Card("number", String(numberj))
+                deck.push(card);
+                }
+            }
+        //add actions and bonus
+        for(let i = 0; i <=2; i = i + 1){
+            const card = new Card("action", "freeze")
+            deck.push(card);
+        }
+        for(let i = 0; i <=2; i = i + 1){
+            const card = new Card("action", "second_chance")
+            deck.push(card);
+        }
+        for(let i = 0; i <=2; i = i + 1){
+            const card = new Card("action", "draw_three")
+            deck.push(card);
+        }
+        for(let i = 1; i <=5; i = i + 1){
+            const card = new Card("modif", "+" + String(2 * i))
+            deck.push(card);
+        }
+        const card2 = new Card("modif", "x 2")
+        deck.push(card2);  
+        return deck;
+        }
 
     jeu() {
         // On lance la partie :
@@ -82,6 +116,95 @@ export class Partie {
         }
 
     }
+
+    piocher_carte() {
+        let len = this.deck.length;
+        if (len == 0) {
+            this.deck.push(this.defausse);
+            this.deck = this.deck[0][0]
+            this.defausse = [];
+            len = this.deck.length;
+            }
+        let draw = randomInteger(0, len);
+        let card = this.deck.splice(draw, 1);
+        console.log(card[0]);
+        return card[0];
+    }
+
+    draw_three(personne){
+        for (i = 0; i < 3; i = i + 1){
+            if (personne.statut == "Active")
+                carte = this.piocher_carte()
+                this.appliquer_carte(personne, carte)
+        }
+    }
+    
+    discard(deck) {
+        for (const elem in deck)
+            {this.defausse.push(elem);}
+        deck = [];
+        return deck;
+        }
+
+    joueur_defausse (personne){
+        personne.deck = discard(personne.tours.nombres)
+        personne.deck = discard(personne.tours.modificateur)
+        personne.deck = discard(personne.tours.actions)
+    }
+
+    appliquer_carte(joueur, carte) {
+    if (carte.type == 'action'){
+    
+        //ajouter carte au joueur
+        let ok = false
+        while (!ok){
+            let qui = prompt("A qui donner cette action ? (No pour personne)")
+            if (qui == "No"){
+                this.defausse.push(carte)
+            }
+            else{
+                for (const personne of this.l_joueurs){
+                    if (personne.nom == qui){
+                        if (personne.statut == "Active") {
+                            if (carte.value == 'second_chance') {
+                                if (personne.tours.modificateur = []){
+                                    personne.tours.modificateur = [carte]
+                                    ok = true
+                                }
+                                else {console.log("Ce joueur a déjà une seconde chance, réessaye.")}
+                            }
+                            else if (carte.value == 'freeze') {
+                                joueur_defausse (personne)
+                                personne.statut = "Passive"
+                                this.defausse.push(carte)
+                            }
+                            else if (carte.value == 'draw_three') {
+                                this.draw_three(player)
+                                this.defausse.push(carte)
+                            }
+                        }
+                        else {console.log("Ce joueur est eliminé, réessaye.")}
+                    }
+                    else {console.log("Ce joueur n'existe pas, réessaye.")}
+                }
+            }
+        }
+    }
+    if (carte.type == 'value'){
+        for (const element of joueur.tours.nombres){
+            if (element == carte) {
+                joueur.statut = "Lost"
+            }
+        }
+        joueur.tours.push(carte)
+        if (joueur.statut == "Lost") {
+            deck, discard = defausse(deck, discard)
+        }
+    }
+    if (carte.type == 'modif') {
+        joueur.modif.push(carte)
+    }
+}
 
     initTour(){
         /* On incrémente le compteur de tour et on passe tous les joueurs en état actif */
@@ -149,6 +272,7 @@ export class Partie {
        
 }
         
+
 
 
 
