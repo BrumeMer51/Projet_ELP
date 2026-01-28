@@ -4,18 +4,12 @@ l_joueurs = [
     {
         statut : "Actif"
         total : 76,
-        tours : [
+        tours : 
             {
                 "nombres" : [12,2,0],
                 "actions" : ["second chance"],
                 "modificateur" : ["+2"] 
-            },
-            {
-                "nombres" : [12,2,0],
-                "actions" : ["second chance"],
-                "modificateur" : ["+2"]
             }
-        ]
     },
     "Charlotte" :
      {
@@ -151,5 +145,6 @@ affichageJoueur(joueur) :
 
 
     
+
 
 
