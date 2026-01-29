@@ -9,12 +9,12 @@ export class Tour {
         let res_nb = 0
         let res_bonus = 0
         // On fait la somme des nombres :
-        for (const nb in this.nombres){
-            res_nb += parseInt(nb, 10)
+        for (const nb of this.nombres){
+            res_nb += parseInt(nb.value, 10)
         }
-        for (const modif in this.modificateur){
-            if (modif != "x2") {
-                let ajout = modif.slice(1)
+        for (const modif of this.modificateur){
+            if (modif.value != "x2") {
+                let ajout = modif.value.slice(1)
                 res_bonus += ajout
             }
             else {
