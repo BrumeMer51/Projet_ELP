@@ -73,6 +73,7 @@ export class Partie {
             this.ecritureTour()
             for (const j of this.l_joueurs) {
                 j.total += j.tour.somme()
+                if (this.flip7 == j) {j.total += 15}
                 j.tour = new Tour()
             }
             
@@ -121,6 +122,7 @@ export class Partie {
         for (const j of this.l_joueurs) {
                 j.statut = "Actif"
         }
+        console.log("###### \n Tour ", this.tour_courant, "\n ###### \n")
     }
 
     firstDistrib(){
@@ -151,7 +153,7 @@ export class Partie {
     }
 
     ecritureTour() {
-        this.ajout_fichier(`Tour ${this.tour_courant}`)
+        this.ajout_fichier(`###### \n Tour ${this.tour_courant} \n######`)
         for (const j of this.l_joueurs){
             let infos = j.affichageJoueur()
             this.ajout_fichier(infos)
@@ -173,11 +175,20 @@ export class Partie {
     jouer(joueur){
         let valide = false 
         while (!valide) {
-            let choix = prompt("Que voulez vous faire ? \n 1)Rester \n 2)Piocher \n Choix : ")
+            console.log("\n" + "=".repeat(40));
+            console.log(`A ${joueur.nom} de jouer !`);
+            console.log("=".repeat(40));
+            console.log("1 -  Arrêter pour ce tour");
+            console.log("2 -  Piocher une carte");
+            console.log("=".repeat(40));
+            
+            let choix = prompt("➤ Votre choix : ");
             if (choix == "1"){
                 joueur.statut = "Passif"
+                console.log(joueur.nom, " se retire du tour \n")
                 valide = true
             } else if (choix == "2") {
+                console.log(joueur.nom, " décide de piocher ! \n")
                 let nouvelle_carte = this.piocher_carte()
                 this.appliquer_carte(joueur, nouvelle_carte)
                 valide = true
@@ -204,23 +215,24 @@ export class Partie {
 
     draw_three(personne){
         for ( let i = 0; i < 3; i = i + 1){
-            if (personne.statut == "Active")
-                carte = this.piocher_carte()
+            if (personne.statut == "Active") {
+                let carte = this.piocher_carte()
                 this.appliquer_carte(personne, carte)
+            }
         }
     }
     
     discard(deck) {
-        for (const elem in deck)
+        for (const elem of deck)
             {this.defausse.push(elem);}
         deck = [];
         return deck;
     }
 
     joueur_defausse (personne){
-        personne.deck = discard(personne.tours.nombres)
-        personne.deck = discard(personne.tours.modificateur)
-        personne.deck = discard(personne.tours.actions)
+        personne.tour.nombres = this.discard(personne.tour.nombres)
+        personne.tour.modificateur = this.discard(personne.tour.modificateur)
+        personne.tour.actions = this.discard(personne.tour.actions)
     }
 
     appliquer_carte(joueur, carte) {
@@ -258,7 +270,7 @@ export class Partie {
                                 this.defausse.push(carte)
                             }
                         }
-                        else {console.log("Ce joueur est eliminé, réessaye.")}
+                        else {console.log("Ce joueur est éliminé, réessaye.")}
                     }
                 }
                 if (!trouve) {
@@ -277,7 +289,8 @@ export class Partie {
         joueur.tour.nombres.push(carte)
         // Si le joueur perd, il défausse ses cartes
         if (joueur.statut == "Passif") {
-            this.deck, this.discard = defausse(this.deck, this.discard)
+            console.log("Dommage, ", joueur.nom, " ,vous aviez déjà un ", carte.value)
+            this.joueur_defausse(joueur)
         } else if (joueur.tour.nombres.length === 7){ // Si le joueur est actif et a 7 cartes différentes, alors il gagne ce round
             this.flip7 = joueur
         }
