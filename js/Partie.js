@@ -134,7 +134,7 @@ export class Partie {
     verifFinPartie() {
         let res = false
         for (let i = 0; i < this.l_joueurs.length; i ++) {
-            if (this.l_joueurs[i].total >= 20) {
+            if (this.l_joueurs[i].total >= 100) {
                 res = true
             }
         }
@@ -223,7 +223,7 @@ export class Partie {
             this.defausse = [];
             len = this.deck.length;
             }
-        let draw = this.randomInteger(0, len);
+        let draw = this.randomInteger(0, len - 1);
         let card = this.deck.splice(draw, 1);
         console.log("Vous avez pioché : ", card[0].value, "\n");
         return card[0];
@@ -279,7 +279,8 @@ export class Partie {
                                     personne.tour.actions = [carte]
                                     ok = true
                                 }
-                                else {console.log("Ce joueur a déjà une seconde chance, réessaye.")} // Ici il faut mettre une boucle pour permettre un nouvel essai
+                                else {console.log("Ce joueur a déjà une seconde chance, réessaye.")} 
+                                    this.appliquer_carte(joueur, carte)
                             }
                             else if (carte.value == 'freeze') {
                                 this.joueur_defausse(personne)
@@ -320,6 +321,9 @@ export class Partie {
         } else if (joueur.tour.nombres.length === 7){ // Si le joueur est actif et a 7 cartes différentes, alors il gagne ce round
             this.flip7 = joueur
             console.log("Wow, ", joueur.nom," a fait un flip7 !!!")
+            for (const personne of joueur){
+                personne.statut = "Passif"
+            }
         }
     }
     if (carte.type == 'modif') {
@@ -334,7 +338,3 @@ export class Partie {
        
 }
         
-
-
-
-
