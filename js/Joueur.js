@@ -14,7 +14,7 @@ export class Joueur {
     */
     let chaine = ""
     for (let i = 0; i < this.tour.nombres.length; i ++) {
-        chaine = chaine + this.tour.nombres[i]
+        chaine = chaine + this.tour.nombres[i].value
         if (i != this.tour.nombres.length - 1) {
             chaine += ","
         }
@@ -22,7 +22,7 @@ export class Joueur {
     chaine += "    "
 
     for (let i = 0; i < this.tour.modificateur.length; i ++) {
-        chaine = chaine + this.tour.nombres[i]
+        chaine = chaine + this.tour.modificateur[i].value
         if (i != this.tour.modificateur.length - 1) {
             chaine += ","
         }
@@ -30,11 +30,11 @@ export class Joueur {
     chaine += "    "
 
     if (this.tour.actions.length != 0) {
-        chaine += tour.actions[0]
+        chaine += this.tour.actions[0].value
     }
 
-    chaine += "    Total" + string(this.total)
-    let res = this.nom + ":" + chaine
+    chaine += "    Total " + this.total
+    let res = this.nom + ":" + chaine + "\n"
     return res
   }
 }
