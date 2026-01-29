@@ -78,7 +78,7 @@ export class Partie {
             }
             
         }
-        // ecriture des points finaux
+        this.endGame()
 
     }
 
@@ -114,7 +114,6 @@ export class Partie {
         return deck;
     }
 
-
     initTour(){
         /* On incrémente le compteur de tour et on passe tous les joueurs en état actif */
         this.tour_courant += 1
@@ -135,11 +134,28 @@ export class Partie {
     verifFinPartie() {
         let res = false
         for (let i = 0; i < this.l_joueurs.length; i ++) {
-            if (this.l_joueurs[i].total >= 200) {
+            if (this.l_joueurs[i].total >= 20) {
                 res = true
             }
         }
         return res
+    }
+
+    endGame() {
+        this.ajout_fichier("Points totaux : \n")
+        for (const j of this.l_joueurs) {
+            this.ajout_fichier(`${j.nom} : ${j.total} \n`)
+        }
+        let winner = this.l_joueurs[0]
+        let max = winner.total
+        for (const j of this.l_joueurs){
+            if (j.total > max) {
+                winner = j 
+                max = j.total
+            }
+        }
+        this.ajout_fichier(`Victoire de ${winner.nom} !!`)
+        console.log("Victoire de ", winner.nom, " !!!")
     }
 
     resteActif(){
@@ -214,10 +230,15 @@ export class Partie {
     }
 
     draw_three(personne){
-        for ( let i = 0; i < 3; i = i + 1){
-            if (personne.statut == "Active") {
-                let carte = this.piocher_carte()
-                this.appliquer_carte(personne, carte)
+        if (personne.statut === "Actif") {
+            for (let i = 0; i < 3; i++){
+                let carte = this.piocher_carte();
+                this.appliquer_carte(personne, carte);
+                
+                // Si le joueur devient passif, on arrête
+                if (personne.statut === "Passif") {
+                    break;
+                }
             }
         }
     }
@@ -254,11 +275,11 @@ export class Partie {
                             ok = true
                             trouve = true
                             if (carte.value == 'second_chance') {
-                                if (personne.tour.modificateur == []){
-                                    personne.tour.modificateur = [carte]
+                                if (personne.tour.actions == []){
+                                    personne.tour.actions = [carte]
                                     ok = true
                                 }
-                                else {console.log("Ce joueur a déjà une seconde chance, réessaye.")}
+                                else {console.log("Ce joueur a déjà une seconde chance, réessaye.")} // Ici il faut mettre une boucle pour permettre un nouvel essai
                             }
                             else if (carte.value == 'freeze') {
                                 this.joueur_defausse(personne)
@@ -283,16 +304,22 @@ export class Partie {
         // Si la carte est déjà présente dans le jeu du joueur :
         for (const element of joueur.tour.nombres){
             if (element.value == carte.value) {
-                joueur.statut = "Passif"
+                if (joueur.tour.actions.length !== 0) {
+                    console.log("Ouf, vous aviez une seconde chance !")
+                    joueur.tour.actions = []
+                } else {
+                    joueur.statut = "Passif"
+                    console.log("Dommage, ", joueur.nom,", vous aviez déjà un ", carte.value)
+                }
             }
         }
         joueur.tour.nombres.push(carte)
         // Si le joueur perd, il défausse ses cartes
         if (joueur.statut == "Passif") {
-            console.log("Dommage, ", joueur.nom, " ,vous aviez déjà un ", carte.value)
             this.joueur_defausse(joueur)
         } else if (joueur.tour.nombres.length === 7){ // Si le joueur est actif et a 7 cartes différentes, alors il gagne ce round
             this.flip7 = joueur
+            console.log("Wow, ", joueur.nom," a fait un flip7 !!!")
         }
     }
     if (carte.type == 'modif') {
