@@ -277,10 +277,11 @@ export class Partie {
                             if (carte.value == 'second_chance') {
                                 if (personne.tour.actions == []){
                                     personne.tour.actions = [carte]
-                                    ok = true
                                 }
-                                else {console.log("Ce joueur a déjà une seconde chance, réessaye.")} 
-                                    this.appliquer_carte(joueur, carte)
+                                else {
+                                    console.log("Ce joueur a déjà une seconde chance, réessaye.")
+                                    ok = false
+                                } 
                             }
                             else if (carte.value == 'freeze') {
                                 this.joueur_defausse(personne)
