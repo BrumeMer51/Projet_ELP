@@ -15,7 +15,7 @@ export class Tour {
         for (const modif of this.modificateur){
             if (modif.value != "x2") {
                 let ajout = modif.value.slice(1)
-                res_bonus += ajout
+                res_bonus += parseInt(ajout, 10)
             }
             else {
                 res_nb = res_nb*2
