@@ -30,8 +30,10 @@ export class Partie {
         let valide = false
         let nb_joueurs = 0
         while (valide != true) {
-            nb_joueurs = parseInt(prompt("Combien de joueurs ? "))
-            if (nb_joueurs === 0 || nb_joueurs === 1) {
+            nb_joueurs = Number(prompt("Combien de joueurs ? "))
+            if (Number.isNaN(nb_joueurs)) {
+                console.log("Il faut rentrer un entier")
+            } else if (nb_joueurs < 2) {
                 console.log("Il faut au moins 2 joueurs")
             } else {
                 valide = true
@@ -134,7 +136,7 @@ export class Partie {
     verifFinPartie() {
         let res = false
         for (let i = 0; i < this.l_joueurs.length; i ++) {
-            if (this.l_joueurs[i].total >= 100) {
+            if (this.l_joueurs[i].total >= 200) {
                 res = true
             }
         }
