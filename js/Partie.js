@@ -16,6 +16,7 @@ export class Partie {
         this.flip7 = null
     }
 
+    // Fonctions d'initialisation
     init() {
         // Création du fichier de la partie :
         try {
@@ -46,6 +47,73 @@ export class Partie {
             this.l_joueurs.push(joueur)
             }
     }
+
+    create_deck() {
+        const card0 = new Card("number", 0);
+        let deck = [];
+        deck.push(card0);
+        for(let numberi = 1; numberi <= 12; numberi = numberi + 1) {
+            for(let numberj = numberi; numberj <= 12; numberj = numberj + 1) {
+                const card = new Card("number", String(numberj))
+                deck.push(card);
+                }
+            }
+        //add actions and bonus
+        for(let i = 0; i <=2; i = i + 1){
+            const card = new Card("action", "freeze")
+            deck.push(card);
+        }
+        for(let i = 0; i <=2; i = i + 1){
+            const card = new Card("action", "second_chance")
+            deck.push(card);
+        }
+        for(let i = 0; i <=2; i = i + 1){
+            const card = new Card("action", "draw_three")
+            deck.push(card);
+        }
+        for(let i = 1; i <=5; i = i + 1){
+            const card = new Card("modif", "+" + String(2 * i))
+            deck.push(card);
+        }
+        const card2 = new Card("modif", "x 2")
+        deck.push(card2);  
+        return deck;
+    }
+
+    // Fonctions d'écriture du fichier
+    endGame() {
+        this.ajout_fichier("Points totaux : \n")
+        for (const j of this.l_joueurs) {
+            this.ajout_fichier(`${j.nom} : ${j.total} \n`)
+        }
+        let winner = this.l_joueurs[0]
+        let max = winner.total
+        for (const j of this.l_joueurs){
+            if (j.total > max) {
+                winner = j 
+                max = j.total
+            }
+        }
+        this.ajout_fichier(`Victoire de ${winner.nom} !!`)
+        console.log("Victoire de ", winner.nom, " !!!")
+    }
+
+    ecritureTour(j) {
+        let infos = j.affichageJoueur()
+        this.ajout_fichier(infos)
+
+        console.log("Fichier mis à jour !")
+    }
+
+    ajout_fichier(string) {
+        try {
+            fs.appendFileSync(this.nom_fichier, "\n" + string);
+        } catch (err) {
+            console.error("Erreur lors de l'écriture:", err.message);
+        }
+    }
+
+    // Fonctions de jeu :
 
     jeu() {
         // On lance la partie :
@@ -84,38 +152,6 @@ export class Partie {
 
     }
 
-    create_deck() {
-        const card0 = new Card("number", 0);
-        let deck = [];
-        deck.push(card0);
-        for(let numberi = 1; numberi <= 12; numberi = numberi + 1) {
-            for(let numberj = numberi; numberj <= 12; numberj = numberj + 1) {
-                const card = new Card("number", String(numberj))
-                deck.push(card);
-                }
-            }
-        //add actions and bonus
-        for(let i = 0; i <=2; i = i + 1){
-            const card = new Card("action", "freeze")
-            deck.push(card);
-        }
-        for(let i = 0; i <=2; i = i + 1){
-            const card = new Card("action", "second_chance")
-            deck.push(card);
-        }
-        for(let i = 0; i <=2; i = i + 1){
-            const card = new Card("action", "draw_three")
-            deck.push(card);
-        }
-        for(let i = 1; i <=5; i = i + 1){
-            const card = new Card("modif", "+" + String(2 * i))
-            deck.push(card);
-        }
-        const card2 = new Card("modif", "x 2")
-        deck.push(card2);  
-        return deck;
-    }
-
     initTour(){
         /* On incrémente le compteur de tour et on passe tous les joueurs en état actif */
         this.tour_courant += 1
@@ -130,58 +166,6 @@ export class Partie {
         for (const j of this.l_joueurs) {
             let carte = this.piocher_carte()
             this.appliquer_carte(j, carte)
-        }
-    }
-
-    verifFinPartie() {
-        let res = false
-        for (let i = 0; i < this.l_joueurs.length; i ++) {
-            if (this.l_joueurs[i].total >= 200) {
-                res = true
-            }
-        }
-        return res
-    }
-
-    endGame() {
-        this.ajout_fichier("Points totaux : \n")
-        for (const j of this.l_joueurs) {
-            this.ajout_fichier(`${j.nom} : ${j.total} \n`)
-        }
-        let winner = this.l_joueurs[0]
-        let max = winner.total
-        for (const j of this.l_joueurs){
-            if (j.total > max) {
-                winner = j 
-                max = j.total
-            }
-        }
-        this.ajout_fichier(`Victoire de ${winner.nom} !!`)
-        console.log("Victoire de ", winner.nom, " !!!")
-    }
-
-    resteActif(){
-        let res = false
-        for (const j of this.l_joueurs) {
-            if (j.statut == "Actif") {
-                res = true
-            }
-        }
-        return res
-    }
-
-    ecritureTour(j) {
-        let infos = j.affichageJoueur()
-        this.ajout_fichier(infos)
-
-        console.log("Fichier mis à jour !")
-    }
-
-    ajout_fichier(string) {
-        try {
-            fs.appendFileSync(this.nom_fichier, "\n" + string);
-        } catch (err) {
-            console.error("Erreur lors de l'écriture:", err.message);
         }
     }
 
@@ -211,6 +195,29 @@ export class Partie {
         }
     }
 
+    // Fonctions de vérification :
+
+    verifFinPartie() {
+        let res = false
+        for (let i = 0; i < this.l_joueurs.length; i ++) {
+            if (this.l_joueurs[i].total >= 200) {
+                res = true
+            }
+        }
+        return res
+    }
+
+    resteActif(){
+        let res = false
+        for (const j of this.l_joueurs) {
+            if (j.statut == "Actif") {
+                res = true
+            }
+        }
+        return res
+    }
+
+    // Fonctions des liées aux cartes :
     piocher_carte() {
         let len = this.deck.length;
         // Si la pioche est vide, on reprend la défausse
@@ -253,7 +260,8 @@ export class Partie {
         personne.tour.modificateur = this.discard(personne.tour.modificateur)
         personne.tour.actions = this.discard(personne.tour.actions)
     }
-
+    
+    // Fonction pour appliquer une carte à un joueur :
     appliquer_carte(joueur, carte) {
     if (carte.type == 'action'){
     
@@ -333,6 +341,7 @@ export class Partie {
     }
     }
 
+    // Fonction annexe :
     randomInteger(min, max) {
         return Math.floor(Math.random() * (max - min + 1) ) + min;
     }
