@@ -307,7 +307,6 @@ export class Partie {
                 if (joueur.tour.actions.length !== 0) {
                     console.log("Ouf, vous aviez une seconde chance !")
                     this.defausse.push(joueur.tour.actions[0])
-                    console.log(joueur.tour.actions[0])
                     joueur.tour.actions = []
                     rajout = false
                 } else {
