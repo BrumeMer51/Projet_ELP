@@ -89,6 +89,7 @@ export class Partie {
     // Fonctions d'écriture du fichier
     endGame() {
         // On affiche les points totaux de tous les joueurs, pui le vainqueur final
+        this.ajout_fichier("#".repeat(40))
         this.ajout_fichier("Points totaux : \n")
         for (const j of this.l_joueurs) {
             this.ajout_fichier(`${j.nom} : ${j.total} \n`)
@@ -101,7 +102,9 @@ export class Partie {
                 max = j.total
             }
         }
+        this.ajout_fichier("#".repeat(40))
         this.ajout_fichier(`Victoire de ${winner.nom} !!`)
+        this.ajout_fichier("#".repeat(40))
         console.log("Victoire de ", winner.nom, " !!!")
     }
 
