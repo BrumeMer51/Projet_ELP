@@ -178,7 +178,6 @@ export class Partie {
     ajout_fichier(string) {
         try {
             fs.appendFileSync(this.nom_fichier, "\n" + string);
-            console.log("Ligne ajoutée !"); // Ligne de vérification, à enlever dans la version finale
         } catch (err) {
             console.error("Erreur lors de l'écriture:", err.message);
         }
