@@ -168,24 +168,20 @@ export class Partie {
         return res
     }
 
-    ecritureTour() {
-        this.ajout_fichier(`###### \n Tour ${this.tour_courant} \n######`)
-        for (const j of this.l_joueurs){
-            let infos = j.affichageJoueur()
-            this.ajout_fichier(infos)
-        }
-        this.ajout_fichier("\n")
+    ecritureTour(j) {
+        let infos = j.affichageJoueur()
+        this.ajout_fichier(infos)
 
         console.log("Fichier mis à jour !")
     }
 
     ajout_fichier(string) {
-    try {
-        fs.appendFileSync(this.nom_fichier, "\n" + string);
-        console.log("Ligne ajoutée !"); // Ligne de vérification, à enlever dans la version finale
-    } catch (err) {
-        console.error("Erreur lors de l'écriture:", err.message);
-    }
+        try {
+            fs.appendFileSync(this.nom_fichier, "\n" + string);
+            console.log("Ligne ajoutée !"); // Ligne de vérification, à enlever dans la version finale
+        } catch (err) {
+            console.error("Erreur lors de l'écriture:", err.message);
+        }
     }
 
     jouer(joueur){
