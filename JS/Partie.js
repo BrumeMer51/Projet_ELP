@@ -177,7 +177,7 @@ export class Partie {
         Distribue une carte à chaque joueur, et l'applique directement 
         */
         for (const j of this.l_joueurs) {
-            let carte = this.piocher_carte()
+            let carte = this.piocher_carte(j)
             this.appliquer_carte(j, carte)
         }
     }
@@ -202,7 +202,7 @@ export class Partie {
                 valide = true
             } else if (choix == "2") {
                 console.log(joueur.nom, " décide de piocher ! \n")
-                let nouvelle_carte = this.piocher_carte()
+                let nouvelle_carte = this.piocher_carte(joueur)
                 this.appliquer_carte(joueur, nouvelle_carte)
                 valide = true
             } else {
@@ -240,7 +240,7 @@ export class Partie {
     }
 
     // Fonctions des liées aux cartes :
-    piocher_carte() {
+    piocher_carte(personne) {
         /*
         Prend une carte au hasard dans la pioche, si nécessaire remet la défausse en jeu, et renvoie la carte piochées 
         */
@@ -251,11 +251,11 @@ export class Partie {
             this.deck = this.deck[0]
             this.defausse = [];
             len = this.deck.length;
-            console.log("La déffause à été remise dans la pioche. \n")
+            console.log("La défausse à été remise dans la pioche. \n")
             }
         let draw = this.randomInteger(0, len - 1);
         let card = this.deck.splice(draw, 1);
-        console.log("Vous avez pioché : ", card[0].value, "\n");
+        console.log(personne.nom," a pioché : ", card[0].value, "\n");
         return card[0];
     }
 
@@ -265,7 +265,7 @@ export class Partie {
         */
         if (personne.statut === "Actif") {
             for (let i = 0; i < 3; i++){
-                let carte = this.piocher_carte();
+                let carte = this.piocher_carte(personne);
                 this.appliquer_carte(personne, carte);
                 
                 // Si le joueur devient passif, on arrête
@@ -296,7 +296,7 @@ export class Partie {
     }
     
     // Fonction pour appliquer une carte à un joueur :
-    appliquer_carte(joueur, carte) {s
+    appliquer_carte(joueur, carte) {
         /*
         Applique la carte tirée par le joueur suivant si c'est une action, un nombre ou une modification
         */
@@ -314,8 +314,8 @@ export class Partie {
                     let trouve = false
                     for (const personne of this.l_joueurs){
                         if (personne.nom == qui){
+                            trouve = true
                             if (personne.statut == "Actif") {
-                                trouve = true
                                 // Si il s'agit d'une SecondeChance :
                                 if (carte.value == 'second_chance') {
                                     // Si le joueur ne l'a pas déjà dans son jeu, on lui ajoutes
@@ -341,7 +341,11 @@ export class Partie {
                                     this.defausse.push(carte)
                                 }
                             }
-                            else {console.log("Ce joueur est éliminé, réessaye.")}
+                            else {
+                                console.log("Ce joueur est éliminé, réessaye.")
+                            }
+                            
+                            
                         }
                     }
                     if (!trouve) {
