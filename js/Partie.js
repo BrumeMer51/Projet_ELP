@@ -70,11 +70,10 @@ export class Partie {
             }
 
             // A la fin d'un tour : 
-            this.ajout_fichier(`###### \n Tour ${this.tour_courant} \n######`)
+            this.ecritureTour()
             for (const j of this.l_joueurs) {
                 j.total += j.tour.somme()
                 if (this.flip7 == j) {j.total += 15}
-                this.ecritureTour(j)
                 j.tour = new Tour()
             }
             
@@ -169,9 +168,13 @@ export class Partie {
         return res
     }
 
-    ecritureTour(j) {
-        let infos = j.affichageJoueur()
-        this.ajout_fichier(infos)
+    ecritureTour() {
+        this.ajout_fichier(`###### \n Tour ${this.tour_courant} \n######`)
+        for (const j of this.l_joueurs){
+            let infos = j.affichageJoueur()
+            this.ajout_fichier(infos)
+        }
+        this.ajout_fichier("\n")
 
         console.log("Fichier mis à jour !")
     }
@@ -216,10 +219,10 @@ export class Partie {
         // Si la pioche est vide, on reprend la défausse
         if (len == 0) {
             this.deck.push(this.defausse);
-            this.deck = this.deck[0][0]
+            this.deck = this.deck[0]
             this.defausse = [];
             len = this.deck.length;
-            console.log("La déffause à été remise dans la pioche. \n", this.deck, "\n")
+            console.log("La déffause à été remise dans la pioche. \n")
             }
         let draw = this.randomInteger(0, len - 1);
         let card = this.deck.splice(draw, 1);
