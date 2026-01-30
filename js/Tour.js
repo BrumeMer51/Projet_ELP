@@ -13,7 +13,7 @@ export class Tour {
             res_nb += parseInt(nb.value, 10)
         }
         for (const modif of this.modificateur){
-            if (modif.value != "x2") {
+            if (modif.value != "x 2") {
                 let ajout = modif.value.slice(1)
                 res_bonus += parseInt(ajout, 10)
             }
@@ -24,3 +24,4 @@ export class Tour {
         return res_nb + res_bonus
     }
 }
+
