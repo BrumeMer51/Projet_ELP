@@ -5,6 +5,7 @@ export class Tour {
         this.modificateur = [];
     }
 
+    // Calcul la somme des points à partir des carts stocké dans Tour
     somme() {
         let res_nb = 0
         let res_bonus = 0
@@ -12,8 +13,9 @@ export class Tour {
         for (const nb of this.nombres){
             res_nb += parseInt(nb.value, 10)
         }
+        // On gère les modificateurs de points
         for (const modif of this.modificateur){
-            if (modif.value != "x 2") {
+            if (modif.value != "x2") {
                 let ajout = modif.value.slice(1)
                 res_bonus += parseInt(ajout, 10)
             }
@@ -24,4 +26,3 @@ export class Tour {
         return res_nb + res_bonus
     }
 }
-
