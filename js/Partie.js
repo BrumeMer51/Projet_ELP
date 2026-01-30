@@ -301,6 +301,7 @@ export class Partie {
         }
     }
     if (carte.type == 'number'){
+        let rajout = true 
         // Si la carte est déjà présente dans le jeu du joueur :
         for (const element of joueur.tour.nombres){
             if (element.value == carte.value) {
@@ -309,13 +310,14 @@ export class Partie {
                     this.defausse.push(joueur.tour.actions[0])
                     console.log(joueur.tour.actions[0])
                     joueur.tour.actions = []
+                    rajout = false
                 } else {
                     joueur.statut = "Passif"
                     console.log("Dommage, ", joueur.nom,", vous aviez déjà un ", carte.value)
                 }
             }
         }
-        joueur.tour.nombres.push(carte)
+        if (rajout) {joueur.tour.nombres.push(carte)}
         // Si le joueur perd, il défausse ses cartes
         if (joueur.statut == "Passif") {
             this.joueur_defausse(joueur)
