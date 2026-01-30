@@ -70,10 +70,11 @@ export class Partie {
             }
 
             // A la fin d'un tour : 
-            this.ecritureTour()
+            this.ajout_fichier(`###### \n Tour ${this.tour_courant} \n######`)
             for (const j of this.l_joueurs) {
                 j.total += j.tour.somme()
                 if (this.flip7 == j) {j.total += 15}
+                this.ecritureTour(j)
                 j.tour = new Tour()
             }
             
@@ -168,13 +169,9 @@ export class Partie {
         return res
     }
 
-    ecritureTour() {
-        this.ajout_fichier(`###### \n Tour ${this.tour_courant} \n######`)
-        for (const j of this.l_joueurs){
-            let infos = j.affichageJoueur()
-            this.ajout_fichier(infos)
-        }
-        this.ajout_fichier("\n")
+    ecritureTour(j) {
+        let infos = j.affichageJoueur()
+        this.ajout_fichier(infos)
 
         console.log("Fichier mis à jour !")
     }
