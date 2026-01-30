@@ -25,6 +25,8 @@ export class Partie {
         } catch (err) {
             console.error("Erreur lors de la création du fichier:", err.message);
         }
+
+        // Creation de la pioche :
         this.deck = this.create_deck()
 
         // Initialisation de la liste des joueurs :
@@ -52,13 +54,15 @@ export class Partie {
         const card0 = new Card("number", 0);
         let deck = [];
         deck.push(card0);
+
+        // Ajout de toutes les cartes nombres :
         for(let numberi = 1; numberi <= 12; numberi = numberi + 1) {
             for(let numberj = numberi; numberj <= 12; numberj = numberj + 1) {
                 const card = new Card("number", String(numberj))
                 deck.push(card);
                 }
             }
-        //add actions and bonus
+        // Ajout des cartes actions :
         for(let i = 0; i <=2; i = i + 1){
             const card = new Card("action", "freeze")
             deck.push(card);
@@ -71,6 +75,8 @@ export class Partie {
             const card = new Card("action", "draw_three")
             deck.push(card);
         }
+
+        // Ajout des cartes modificatrices :
         for(let i = 1; i <=5; i = i + 1){
             const card = new Card("modif", "+" + String(2 * i))
             deck.push(card);
@@ -82,6 +88,7 @@ export class Partie {
 
     // Fonctions d'écriture du fichier
     endGame() {
+        // On affiche les points totaux de tous les joueurs, pui le vainqueur final
         this.ajout_fichier("Points totaux : \n")
         for (const j of this.l_joueurs) {
             this.ajout_fichier(`${j.nom} : ${j.total} \n`)
@@ -163,6 +170,9 @@ export class Partie {
     }
 
     firstDistrib(){
+        /* 
+        Distribue une carte à chaque joueur, et l'applique directement 
+        */
         for (const j of this.l_joueurs) {
             let carte = this.piocher_carte()
             this.appliquer_carte(j, carte)
@@ -170,6 +180,9 @@ export class Partie {
     }
 
     jouer(joueur){
+        /*
+        Offre le choix au joueur de se retirer du tour ou de piocher, si on pioche la carte est appliquée
+        */
         let valide = false 
         while (!valide) {
             console.log("\n" + "=".repeat(40));
@@ -198,6 +211,9 @@ export class Partie {
     // Fonctions de vérification :
 
     verifFinPartie() {
+        /*
+        Vérifie si un joueur a au moins 200 points. 
+        */
         let res = false
         for (let i = 0; i < this.l_joueurs.length; i ++) {
             if (this.l_joueurs[i].total >= 200) {
@@ -208,6 +224,9 @@ export class Partie {
     }
 
     resteActif(){
+        /* 
+        Vérifie si il reste des joueurs actifs
+        */
         let res = false
         for (const j of this.l_joueurs) {
             if (j.statut == "Actif") {
@@ -219,6 +238,9 @@ export class Partie {
 
     // Fonctions des liées aux cartes :
     piocher_carte() {
+        /*
+        Prend une carte au hasard dans la pioche, si nécessaire remet la défausse en jeu, et renvoie la carte piochées 
+        */
         let len = this.deck.length;
         // Si la pioche est vide, on reprend la défausse
         if (len == 0) {
@@ -235,6 +257,9 @@ export class Partie {
     }
 
     draw_three(personne){
+        /*
+        Oblige le joueur "personne" a piocher 3 cartes de suite en les appliquant immédiatement
+        */
         if (personne.statut === "Actif") {
             for (let i = 0; i < 3; i++){
                 let carte = this.piocher_carte();
@@ -249,6 +274,9 @@ export class Partie {
     }
     
     discard(deck) {
+        /*
+        Met tous les éléments de la liste "deck" dans la défausse, et renvoie la liste vidée
+        */
         for (const elem of deck)
             {this.defausse.push(elem);}
         deck = [];
@@ -256,93 +284,109 @@ export class Partie {
     }
 
     joueur_defausse (personne){
+        /*
+        Défausse toutes les cartes du joueur "personne"
+        */
         personne.tour.nombres = this.discard(personne.tour.nombres)
         personne.tour.modificateur = this.discard(personne.tour.modificateur)
         personne.tour.actions = this.discard(personne.tour.actions)
     }
     
     // Fonction pour appliquer une carte à un joueur :
-    appliquer_carte(joueur, carte) {
-    if (carte.type == 'action'){
-    
-        //ajouter carte au joueur
-        let ok = false
-        while (!ok){
-            let qui = prompt("A qui donner cette action ? (No pour personne)")
-            if (qui == "No"){
-                this.defausse.push(carte)
-                ok = true
-            }
-            else {
-                let trouve = false
-                for (const personne of this.l_joueurs){
-                    if (personne.nom == qui){
-                        if (personne.statut == "Actif") {
-                            ok = true
-                            trouve = true
-                            if (carte.value == 'second_chance') {
-                                if (personne.tour.actions.length === 0){
-                                    personne.tour.actions = [carte]
-                                    ok = true
+    appliquer_carte(joueur, carte) {s
+        /*
+        Applique la carte tirée par le joueur suivant si c'est une action, un nombre ou une modification
+        */
+        if (carte.type == 'action'){
+            let ok = false
+            // Tant que le joueur choisi n'est pas valide : 
+            while (!ok){
+                // Si on ne veut la donner à personne
+                let qui = prompt("A qui donner cette action ? (No pour personne)")
+                if (qui == "No"){
+                    this.defausse.push(carte)
+                    ok = true
+                }
+                else {
+                    let trouve = false
+                    for (const personne of this.l_joueurs){
+                        if (personne.nom == qui){
+                            if (personne.statut == "Actif") {
+                                trouve = true
+                                // Si il s'agit d'une SecondeChance :
+                                if (carte.value == 'second_chance') {
+                                    // Si le joueur ne l'a pas déjà dans son jeu, on lui ajoutes
+                                    if (personne.tour.actions.length === 0){
+                                        personne.tour.actions = [carte]
+                                        ok = true
+                                    }
+                                    else {
+                                        console.log("Ce joueur a déjà une seconde chance, réessaye.")
+                                    } 
                                 }
-                                else {
-                                    console.log("Ce joueur a déjà une seconde chance, réessaye.")
-                                } 
+                                // Si il s'agit de la carte freeze, le joueur est éliminé
+                                else if (carte.value == 'freeze') {
+                                    ok = true
+                                    this.joueur_defausse(personne)
+                                    personne.statut = "Passif"
+                                    this.defausse.push(carte)
+                                }
+                                // Si il s'agit de la carte DrawThree, on l'applique au joueurs
+                                else if (carte.value == 'draw_three') {
+                                    ok = true
+                                    this.draw_three(personne)
+                                    this.defausse.push(carte)
+                                }
                             }
-                            else if (carte.value == 'freeze') {
-                                this.joueur_defausse(personne)
-                                personne.statut = "Passif"
-                                this.defausse.push(carte)
-                            }
-                            else if (carte.value == 'draw_three') {
-                                this.draw_three(personne)
-                                this.defausse.push(carte)
-                            }
+                            else {console.log("Ce joueur est éliminé, réessaye.")}
                         }
-                        else {console.log("Ce joueur est éliminé, réessaye.")}
+                    }
+                    if (!trouve) {
+                        console.log("Ce joueur n'existe pas, réessaye.")
+                    }
+                } 
+            }
+        }
+        if (carte.type == 'number'){
+            let rajout = true 
+            for (const element of joueur.tour.nombres){
+                // Si la carte est déjà présente dans le jeu du joueur :
+                if (element.value == carte.value) {
+                    // Si le joueur a une SecondeChance, il est sauvé :
+                    if (joueur.tour.actions.length !== 0) {
+                        console.log("Ouf, vous aviez une seconde chance !")
+                        this.defausse.push(joueur.tour.actions[0])
+                        joueur.tour.actions = []
+                        rajout = false
+                    } else {
+                        joueur.statut = "Passif"
+                        console.log("Dommage, ", joueur.nom,", vous aviez déjà un ", carte.value)
                     }
                 }
-                if (!trouve) {
-                    console.log("Ce joueur n'existe pas, réessaye.")
-                }
-            } 
-        }
-    }
-    if (carte.type == 'number'){
-        let rajout = true 
-        // Si la carte est déjà présente dans le jeu du joueur :
-        for (const element of joueur.tour.nombres){
-            if (element.value == carte.value) {
-                if (joueur.tour.actions.length !== 0) {
-                    console.log("Ouf, vous aviez une seconde chance !")
-                    this.defausse.push(joueur.tour.actions[0])
-                    joueur.tour.actions = []
-                    rajout = false
-                } else {
-                    joueur.statut = "Passif"
-                    console.log("Dommage, ", joueur.nom,", vous aviez déjà un ", carte.value)
+            }
+            if (rajout) {joueur.tour.nombres.push(carte)}
+            // Si le joueur perd, il défausse ses cartes
+            if (joueur.statut == "Passif") {
+                this.joueur_defausse(joueur)
+            } else if (joueur.tour.nombres.length === 7){ 
+                // Si le joueur est actif et a 7 cartes différentes, alors il gagne ce round
+                this.flip7 = joueur
+                console.log("Wow, ", joueur.nom," a fait un flip7 !!!")
+                for (const personne of this.l_joueurs){
+                    personne.statut = "Passif"
                 }
             }
         }
-        if (rajout) {joueur.tour.nombres.push(carte)}
-        // Si le joueur perd, il défausse ses cartes
-        if (joueur.statut == "Passif") {
-            this.joueur_defausse(joueur)
-        } else if (joueur.tour.nombres.length === 7){ // Si le joueur est actif et a 7 cartes différentes, alors il gagne ce round
-            this.flip7 = joueur
-            console.log("Wow, ", joueur.nom," a fait un flip7 !!!")
-            for (const personne of this.l_joueurs){
-                personne.statut = "Passif"
-            }
+        if (carte.type == 'modif') {
+            joueur.tour.modificateur.push(carte)
         }
-    }
-    if (carte.type == 'modif') {
-        joueur.tour.modificateur.push(carte)
-    }
     }
 
     // Fonction annexe :
     randomInteger(min, max) {
+        /*
+        Renvoie un entier aléatoire entre min et max (compris)
+        */
         return Math.floor(Math.random() * (max - min + 1) ) + min;
     }
 
