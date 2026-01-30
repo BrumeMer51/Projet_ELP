@@ -222,6 +222,7 @@ export class Partie {
             this.deck = this.deck[0][0]
             this.defausse = [];
             len = this.deck.length;
+            console.log("La déffause à été remise dans la pioche. \n", this.deck, "\n")
             }
         let draw = this.randomInteger(0, len - 1);
         let card = this.deck.splice(draw, 1);
@@ -277,6 +278,7 @@ export class Partie {
                             if (carte.value == 'second_chance') {
                                 if (personne.tour.actions == []){
                                     personne.tour.actions = [carte]
+                                    ok = true
                                 }
                                 else {
                                     console.log("Ce joueur a déjà une seconde chance, réessaye.")
@@ -322,7 +324,7 @@ export class Partie {
         } else if (joueur.tour.nombres.length === 7){ // Si le joueur est actif et a 7 cartes différentes, alors il gagne ce round
             this.flip7 = joueur
             console.log("Wow, ", joueur.nom," a fait un flip7 !!!")
-            for (const personne of joueur){
+            for (const personne of this.l_joueurs){
                 personne.statut = "Passif"
             }
         }
