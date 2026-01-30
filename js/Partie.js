@@ -272,13 +272,12 @@ export class Partie {
                             ok = true
                             trouve = true
                             if (carte.value == 'second_chance') {
-                                if (personne.tour.actions == []){
+                                if (personne.tour.actions.length === 0){
                                     personne.tour.actions = [carte]
                                     ok = true
                                 }
                                 else {
                                     console.log("Ce joueur a déjà une seconde chance, réessaye.")
-                                    ok = false
                                 } 
                             }
                             else if (carte.value == 'freeze') {
