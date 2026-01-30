@@ -9,7 +9,7 @@ export class Joueur {
   }
 
   affichageJoueur() {
-    /* On veut afficher : 
+    /* On affiche : 
     Alice : 7,8,9    +4    Seconde chance   Total : 134
     */
     let chaine = ""
@@ -38,3 +38,4 @@ export class Joueur {
     return res
   }
 }
+
